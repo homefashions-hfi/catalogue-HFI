@@ -675,21 +675,23 @@
         return;
       }
 
-      const itemData = {
-        code: code,
-        name: name,
-        image: currentImageDataUrl,
-        dimension: document.getElementById("input-dimension").value.trim(),
-        weight: document.getElementById("input-weight").value.trim(),
-        description: document.getElementById("input-description").value.trim(),
-        rangka: document.getElementById("input-rangka").value,
-        anyam: document.getElementById("input-anyam").value,
-        finishing: document.getElementById("input-finishing").value,
-        accessories: document.getElementById("input-accessories").value,
-        totalCost: document.getElementById("input-total-cost").value,
-        profit: document.getElementById("input-profit").value,
-        overhead: document.getElementById("input-overhead").value,
-        price: document.getElementById("input-price").value
+     // Ganti bagian itemData menjadi seperti ini:
+const itemData = {
+  code: code,
+  name: name,
+  image: currentImageDataUrl,
+  dimension: document.getElementById("input-dimension").value.trim(),
+  weight: document.getElementById("input-weight").value.trim(),
+  description: document.getElementById("input-description").value.trim(),
+  rangka: document.getElementById("input-rangka").value,
+  anyam: document.getElementById("input-anyam").value,
+  finishing: document.getElementById("input-finishing").value,
+  accessories: document.getElementById("input-accessories").value,
+  total_cost: document.getElementById("input-total-cost").value, // Ubah totalCost -> total_cost
+  profit: document.getElementById("input-profit").value,
+  overhead: document.getElementById("input-overhead").value,
+  price: document.getElementById("input-price").value
+};
       };
 
       const { error } = await supabaseClient.from('products').upsert(itemData, { onConflict: 'code' });
