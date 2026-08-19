@@ -402,7 +402,7 @@
     const SUPABASE_URL = 'https://pmnpctcomypxrezycdcm.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_hJdKchounnrOt1DfhMhF-w_28D2yz3E'; // <--- Masukkan Anon Key Anda di sini
     
-    // Menggunakan variabel supabaseClient agar tidak membentrokkan nama dengan Library global Supabase
+    // Menggunakan variabel supabaseClient
     const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
 
     // DATA USER UNTUK AUTHENTICATION
@@ -675,23 +675,21 @@
         return;
       }
 
-     // Ganti bagian itemData menjadi seperti ini:
-const itemData = {
-  code: code,
-  name: name,
-  image: currentImageDataUrl,
-  dimension: document.getElementById("input-dimension").value.trim(),
-  weight: document.getElementById("input-weight").value.trim(),
-  description: document.getElementById("input-description").value.trim(),
-  rangka: document.getElementById("input-rangka").value,
-  anyam: document.getElementById("input-anyam").value,
-  finishing: document.getElementById("input-finishing").value,
-  accessories: document.getElementById("input-accessories").value,
-  total_cost: document.getElementById("input-total-cost").value, // Ubah totalCost -> total_cost
-  profit: document.getElementById("input-profit").value,
-  overhead: document.getElementById("input-overhead").value,
-  price: document.getElementById("input-price").value
-};
+      const itemData = {
+        code: code,
+        name: name,
+        image: currentImageDataUrl,
+        dimension: document.getElementById("input-dimension").value.trim(),
+        weight: document.getElementById("input-weight").value.trim(),
+        description: document.getElementById("input-description").value.trim(),
+        rangka: document.getElementById("input-rangka").value,
+        anyam: document.getElementById("input-anyam").value,
+        finishing: document.getElementById("input-finishing").value,
+        accessories: document.getElementById("input-accessories").value,
+        total_cost: document.getElementById("input-total-cost").value, // Menggunakan total_cost (snake_case)
+        profit: document.getElementById("input-profit").value,
+        overhead: document.getElementById("input-overhead").value,
+        price: document.getElementById("input-price").value
       };
 
       const { error } = await supabaseClient.from('products').upsert(itemData, { onConflict: 'code' });
@@ -763,6 +761,9 @@ const itemData = {
           ? `<button onclick="hapusData(${originalIndex})" class="bg-red-500 hover:bg-red-600 text-white text-[10px] px-2 py-1 rounded transition">🗑️ Hapus</button>` 
           : '';
 
+        // Mengambil total_cost dari database
+        const itemTotalCost = item.total_cost || item.totalCost || '-';
+
         tr.innerHTML = `
           <td class="border border-gray-200 p-1.5 w-16 align-middle">
             <div class="flex flex-col items-center gap-1">
@@ -787,7 +788,7 @@ const itemData = {
           <td class="border border-gray-200 p-1.5 whitespace-nowrap text-center align-middle">${item.anyam ? 'Rp. ' + item.anyam : '-'}</td>
           <td class="border border-gray-200 p-1.5 whitespace-nowrap text-center align-middle">${item.finishing ? 'Rp. ' + item.finishing : '-'}</td>
           <td class="border border-gray-200 p-1.5 whitespace-nowrap text-center align-middle">${item.accessories ? 'Rp. ' + item.accessories : '-'}</td>
-          <td class="border border-gray-200 p-1.5 whitespace-nowrap text-center align-middle font-medium">${item.totalCost && item.totalCost !== '0' ? 'Rp. ' + item.totalCost : '-'}</td>
+          <td class="border border-gray-200 p-1.5 whitespace-nowrap text-center align-middle font-medium">${itemTotalCost && itemTotalCost !== '0' && itemTotalCost !== '-' ? 'Rp. ' + itemTotalCost : '-'}</td>
           <td class="border border-gray-200 p-1.5 whitespace-nowrap text-center align-middle">${item.profit && item.profit !== '0' ? 'Rp. ' + item.profit : '-'}</td>
           <td class="border border-gray-200 p-1.5 whitespace-nowrap text-center align-middle">${item.overhead && item.overhead !== '0' ? 'Rp. ' + item.overhead : '-'}</td>
           <td class="border border-gray-200 p-1.5 font-bold text-amber-900 bg-amber-50 whitespace-nowrap text-center align-middle">${displayPrice}</td>
@@ -1038,7 +1039,7 @@ const itemData = {
         { header: "ANYAM", key: "anyam", width: 15 },
         { header: "FINISHING", key: "finishing", width: 15 },
         { header: "ACCESSORIES", key: "accessories", width: 15 },
-        { header: "TOTAL COST", key: "totalCost", width: 18 },
+        { header: "TOTAL COST", key: "total_cost", width: 18 },
         { header: "50% PROFIT", key: "profit", width: 18 },
         { header: "OVERHEAD (10%)", key: "overhead", width: 18 },
         { header: "HARGA (RP.)", key: "price", width: 25 },
@@ -1064,7 +1065,7 @@ const itemData = {
           anyam: item.anyam,
           finishing: item.finishing,
           accessories: item.accessories,
-          totalCost: item.totalCost,
+          total_cost: item.total_cost || item.totalCost || "",
           profit: item.profit,
           overhead: item.overhead,
           price: item.price,
@@ -1137,7 +1138,7 @@ const itemData = {
               anyam: row.getCell(7).value ? String(row.getCell(7).value).trim() : "",
               finishing: row.getCell(8).value ? String(row.getCell(8).value).trim() : "",
               accessories: row.getCell(9).value ? String(row.getCell(9).value).trim() : "",
-              totalCost: row.getCell(10).value ? String(row.getCell(10).value).trim() : "",
+              total_cost: row.getCell(10).value ? String(row.getCell(10).value).trim() : "", // Menggunakan total_cost
               profit: row.getCell(11).value ? String(row.getCell(11).value).trim() : "",
               overhead: row.getCell(12).value ? String(row.getCell(12).value).trim() : "",
               price: row.getCell(13).value ? String(row.getCell(13).value).trim() : "Harga belum tersedia",
