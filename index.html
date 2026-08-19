@@ -397,11 +397,13 @@
 
   <script>
     // -------------------------------------------------------------
-    // INISIALISASI SUPABASE (GANTI URL & ANON KEY DENGAN MILIK ANDA)
+    // INISIALISASI SUPABASE (GANTI KEY DENGAN ANON PUBLIC KEY ANDA)
     // -------------------------------------------------------------
     const SUPABASE_URL = 'https://pmnpctcomypxrezycdcm.supabase.co';
-    const SUPABASE_KEY = 'sb_publishable_hJdKchounnrOt1DfhMhF-w_28D2yz3E';
-    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    const SUPABASE_KEY = 'sb_publishable_hJdKchounnrOt1DfhMhF-w_28D2yz3E'; // <--- Masukkan Anon Key Anda di sini
+    
+    // Menggunakan variabel supabaseClient agar tidak membentrokkan nama dengan Library global Supabase
+    const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
 
     // DATA USER UNTUK AUTHENTICATION
     const USERS = {
@@ -421,8 +423,9 @@
 
     // FUNGSI MEMUAT DATA DARI SUPABASE CLOUD
     async function loadCloudData() {
+      if (!supabaseClient) return;
       try {
-        const { data, error } = await supabase.from('products').select('*').order('created_at', { ascending: false });
+        const { data, error } = await supabaseClient.from('products').select('*').order('created_at', { ascending: false });
         if (error) throw error;
         database = data || [];
         applySearchFilter();
@@ -689,7 +692,7 @@
         price: document.getElementById("input-price").value
       };
 
-      const { error } = await supabase.from('products').upsert(itemData, { onConflict: 'code' });
+      const { error } = await supabaseClient.from('products').upsert(itemData, { onConflict: 'code' });
 
       if (error) {
         alert("Gagal menyimpan ke Supabase: " + error.message);
@@ -863,7 +866,7 @@
           const newImg = e.target.result;
           const targetCode = database[targetChangeImageIndex].code;
 
-          const { error } = await supabase.from('products').update({ image: newImg }).eq('code', targetCode);
+          const { error } = await supabaseClient.from('products').update({ image: newImg }).eq('code', targetCode);
 
           if (error) {
             alert("Gagal memperbarui gambar di Cloud: " + error.message);
@@ -970,7 +973,7 @@
 
       const item = database[index];
       if (confirm(`Apakah Anda yakin ingin menghapus data "${item.name}" (${item.code}) dari Cloud?`)) {
-        const { error } = await supabase.from('products').delete().eq('code', item.code);
+        const { error } = await supabaseClient.from('products').delete().eq('code', item.code);
         
         if (error) {
           alert("Gagal menghapus dari Supabase: " + error.message);
@@ -992,7 +995,7 @@
       }
 
       if (confirm("Apakah Anda yakin ingin MENGHAPUS SEMUA DATA dari Cloud? Tindakan ini tidak dapat dibatalkan!")) {
-        const { error } = await supabase.from('products').delete().neq('code', '');
+        const { error } = await supabaseClient.from('products').delete().neq('code', '');
         
         if (error) {
           alert("Gagal menghapus semua data: " + error.message);
@@ -1155,7 +1158,7 @@
         }
 
         if (importList.length > 0) {
-          const { error } = await supabase.from('products').upsert(importList, { onConflict: 'code' });
+          const { error } = await supabaseClient.from('products').upsert(importList, { onConflict: 'code' });
           if (error) throw error;
           
           await loadCloudData();
