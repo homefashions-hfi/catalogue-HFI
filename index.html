@@ -1,0 +1,1197 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Catalogue Database 2026</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+  <!-- SUPABASE SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    @font-face {
+      font-family: 'Penguin';
+      src: url('Penguin.ttf') format('truetype');
+      font-weight: normal;
+      font-style: normal;
+    }
+
+    @font-face {
+      font-family: 'Wishful';
+      src: url('Wishful.ttf') format('truetype');
+      font-weight: normal;
+      font-style: normal;
+    }
+
+    .font-penguin {
+      font-family: 'Penguin', cursive, sans-serif;
+    }
+
+    .font-wishful {
+      font-family: 'Wishful', cursive, sans-serif;
+    }
+
+    .bg-cream-abstract {
+      background-color: #FDFBF7;
+      background-image: 
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400' viewBox='0 0 400 400'%3E%3Cg fill='none' stroke='%238C6D46' stroke-width='1.5' stroke-opacity='0.08'%3E%3Cpath d='M100 350 C100 200, 150 120, 200 120 C250 120, 300 200, 300 350' /%3E%3Cpath d='M120 350 C120 220, 160 140, 200 140 C240 140, 280 220, 280 350' /%3E%3Cpath d='M140 350 C140 240, 170 160, 200 160 C230 160, 260 240, 260 350' /%3E%3Cpath d='M80 280 C120 270, 280 270, 320 280' /%3E%3Cpath d='M90 310 C130 300, 270 300, 310 310' /%3E%3Ccircle cx='200' cy='180' r='100' stroke-dasharray='4,4' /%3E%3C/g%3E%3C/svg%3E"),
+        radial-gradient(circle at 10% 20%, rgba(210, 180, 140, 0.12) 0%, transparent 40%),
+        radial-gradient(circle at 90% 80%, rgba(180, 140, 100, 0.1) 0%, transparent 45%);
+      background-repeat: repeat, no-repeat, no-repeat;
+      background-position: center, center, center;
+    }
+
+    @media print {
+      * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+
+      body * { 
+        visibility: hidden; 
+      }
+      #print-area, #print-area * { 
+        visibility: visible; 
+      }
+      #print-area { 
+        position: absolute; 
+        left: 0; 
+        top: 0; 
+        width: 100%; 
+        box-shadow: none !important;
+        border: none !important;
+      }
+      .no-print { 
+        display: none !important; 
+      }
+
+      input, textarea {
+        border: none !important;
+        background: transparent !important;
+        padding-left: 0 !important;
+        box-shadow: none !important;
+      }
+
+      #price-container {
+        border: none !important;
+        background: transparent !important;
+        padding: 0 !important;
+      }
+
+      #label-rp-jual {
+        position: static !important;
+        margin-right: 4px !important;
+      }
+
+      #input-price {
+        padding-left: 0 !important;
+      }
+    }
+  </style>
+</head>
+<body class="bg-gray-100 font-sans p-4 md:p-8 relative min-h-screen">
+
+  <!-- MODAL LOGIN DENGAN TEMA GLASS -->
+  <div id="login-modal" class="fixed inset-0 bg-slate-950/40 backdrop-blur-md z-50 flex items-center justify-center p-4">
+    <div class="bg-white/70 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/40 w-full max-w-md p-8 relative">
+      <div class="text-center mb-6">
+        <h2 class="text-2xl font-bold text-amber-950">Catalogue Database</h2>
+        <p class="text-xs text-amber-900/70 mt-1">Silakan masuk sesuai role akses Anda</p>
+      </div>
+      
+      <form onsubmit="handleLogin(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Username</label>
+          <input type="text" id="login-username" required placeholder="Masukkan username..." class="w-full px-3 py-2 border border-white/60 rounded-lg bg-white/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Password</label>
+          <input type="password" id="login-password" required placeholder="Masukkan password..." class="w-full px-3 py-2 border border-white/60 rounded-lg bg-white/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm">
+        </div>
+
+        <div class="flex items-center">
+          <input type="checkbox" id="remember-me" class="w-4 h-4 text-amber-600 border-gray-300 rounded focus:ring-amber-500">
+          <label for="remember-me" class="ml-2 text-xs font-medium text-slate-700">Remember me</label>
+        </div>
+        
+        <div id="login-error" class="text-red-600 text-xs font-semibold hidden text-center">
+          Username atau password salah!
+        </div>
+
+        <button type="submit" class="w-full bg-[#c2a378]/90 hover:bg-[#c2a378] text-slate-900 font-bold py-2.5 rounded-lg shadow-md text-sm transition border border-white/30">
+          🔐 Log In
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- KONTEN UTAMA DENGAN EFEK BLUR KETIKA BELUM LOGIN -->
+  <div id="app-content" class="filter blur-md pointer-events-none transition-all duration-300">
+
+    <div class="max-w-6xl mx-auto mb-4 flex justify-between items-center bg-white p-3 px-4 rounded-lg shadow-sm border border-gray-200 no-print">
+      <div class="flex items-center gap-2 text-sm">
+        <span class="text-slate-500">Login sebagai:</span>
+        <span id="user-role-badge" class="font-bold px-2 py-0.5 rounded text-xs uppercase bg-amber-100 text-amber-900 border border-amber-300">
+          -
+        </span>
+      </div>
+      <button onclick="handleLogout()" class="text-xs bg-red-100 hover:bg-red-200 text-red-700 font-semibold px-3 py-1.5 rounded transition flex items-center gap-1">
+        🚪 Logout
+      </button>
+    </div>
+
+    <div class="max-w-6xl mx-auto bg-cream-abstract p-6 rounded-lg shadow-md mb-8 border border-amber-900/10" id="print-area">
+
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-6 pb-4 border-b border-amber-900/10">
+        <div class="flex items-center gap-4">
+          <img src="logo-sae.png" alt="Logo SAE" class="h-20 md:h-24 object-contain shrink-0" onerror="this.style.display='none'">
+          <div class="border-l-2 border-amber-900/20 pl-4 text-xs md:text-sm text-amber-950 leading-relaxed font-medium">
+            Jl. Plumbon-Bode Blok.Duku Setu No.1, RT.001 RW.001<br>
+            Kecamatan Plumbon, Cirebon 45155 West Java. Indonesia          
+          </div>
+        </div>
+        <div class="text-left md:text-right w-full md:w-auto">
+          <h1 class="font-penguin text-4xl md:text-5xl text-amber-950 tracking-wider">
+            CATALOGUE DATABASE •••Collections 2026
+          </h1>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
+        
+        <div class="md:col-span-7 flex flex-col relative">
+          
+          <div id="image-frame" class="border-2 border-amber-900/20 rounded-md h-[420px] flex items-center justify-center bg-transparent relative overflow-hidden group">
+            <img id="product-img" src="" alt="Gambar Produk" class="w-full h-full object-contain hidden">
+            
+            <div id="image-placeholder" class="text-center no-print">
+              <button id="btn-select-image" onclick="document.getElementById('input-image').click()" class="bg-transparent hover:bg-amber-900/5 text-amber-950 font-medium px-4 py-2 rounded text-base transition border border-amber-900/30">
+                pilih gambar
+              </button>
+            </div>
+
+            <div id="hover-image-overlay" class="absolute inset-0 bg-black/10 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity no-print">
+              <button onclick="document.getElementById('input-image').click()" class="bg-white/80 hover:bg-white text-slate-800 px-4 py-2 rounded font-medium text-sm shadow border border-amber-900/20">
+                pilih gambar
+              </button>
+            </div>
+          </div>
+          
+          <p class="text-xs md:text-sm text-amber-950 font-semibold text-left mt-2 pl-1 tracking-wide">
+            © 2026 CV. Home Fashions. All Rights Reserved
+          </p>
+
+          <div class="mt-2 pl-1 flex items-center">
+            <svg id="main-barcode" class="max-h-14 hidden"></svg>
+          </div>
+
+          <div class="mt-4 flex flex-wrap gap-2 no-print">
+            <button onclick="simpanData()" id="btn-simpan" class="flex-1 h-11 bg-[#c2a378] hover:bg-[#b09066] text-slate-900 font-bold rounded shadow text-sm transition flex items-center justify-center gap-1">
+              💾 Simpan
+            </button>
+            <button onclick="cetakData()" id="btn-cetak" class="flex-1 h-11 bg-slate-700 hover:bg-slate-800 text-white font-medium rounded transition text-sm flex items-center justify-center gap-1">
+              🖨️ Cetak / PDF
+            </button>
+            <button onclick="clearForm()" id="btn-reset-form" type="button" class="flex-1 h-11 bg-gray-300 hover:bg-gray-400 text-gray-800 font-medium rounded text-sm transition flex items-center justify-center gap-1">
+              🔄 Reset
+            </button>
+          </div>
+
+          <input type="file" id="input-image" accept="image/*" class="hidden no-print" onchange="previewImage(this)">
+        </div>
+
+        <div class="md:col-span-5 flex flex-col justify-between space-y-4">
+          
+          <div class="bg-white/80 backdrop-blur-sm p-5 rounded-lg border border-amber-900/15 shadow-sm space-y-3">
+            
+            <div class="flex items-center text-sm">
+              <label class="w-36 font-bold text-slate-700 uppercase text-left shrink-0">ITEM CODE</label>
+              <span class="mr-2 font-bold text-slate-600">:</span>
+              <div class="flex gap-2 flex-1">
+                <input type="text" id="input-code" oninput="generateMainBarcode()" onkeydown="handleCodeKeydown(event)" placeholder="masukan kode item" class="w-full px-3 py-1.5 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-amber-500 bg-white">
+                <button onclick="cekHarga()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded text-xs font-semibold no-print whitespace-nowrap">
+                  Cek Harga
+                </button>
+              </div>
+            </div>
+
+            <div class="flex items-center text-sm">
+              <label class="w-36 font-bold text-slate-700 uppercase text-left shrink-0">ITEM NAME</label>
+              <span class="mr-2 font-bold text-slate-600">:</span>
+              <input type="text" id="input-name" placeholder="nama item" class="w-full px-3 py-1.5 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-amber-500 bg-white">
+            </div>
+
+            <div class="flex items-center text-sm">
+              <label class="w-36 font-bold text-slate-700 uppercase text-left shrink-0 leading-tight">DIMENSION<br>(CM)</label>
+              <span class="mr-2 font-bold text-slate-600">:</span>
+              <input type="text" id="input-dimension" placeholder="ukuran" class="w-full px-3 py-1.5 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-amber-500 bg-white">
+            </div>
+
+            <div class="flex items-center text-sm">
+              <label class="w-36 font-bold text-slate-700 uppercase text-left shrink-0 leading-tight">BERAT<br>BARANG</label>
+              <span class="mr-2 font-bold text-slate-600">:</span>
+              <input type="text" id="input-weight" placeholder="berat" class="w-full px-3 py-1.5 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-amber-500 bg-white">
+            </div>
+
+            <div class="flex items-center text-sm">
+              <label class="w-36 font-bold text-amber-950 uppercase text-left shrink-0">HARGA (RP.)</label>
+              <span class="mr-2 font-bold text-amber-950">:</span>
+              <div id="price-container" class="flex-1 flex items-center bg-amber-50 border border-amber-300 rounded px-3 py-1.5">
+                <span id="label-rp-jual" class="text-amber-900 font-bold text-sm mr-1 hidden">Rp.</span>
+                <input type="text" id="input-price" readonly placeholder="Harga belum tersedia" class="w-full font-bold text-amber-900 focus:outline-none bg-transparent">
+              </div>
+            </div>
+
+            <div id="rincian-biaya-container" class="no-print space-y-3">
+              <hr class="border-amber-900/10 my-2">
+
+              <div class="flex items-center text-xs">
+                <label class="w-36 font-medium text-slate-600 uppercase text-left shrink-0">Harga Rangka</label>
+                <span class="mr-2 font-bold text-slate-600">:</span>
+                <div class="relative flex-1 flex items-center">
+                  <span class="absolute left-2.5 text-slate-500 font-semibold select-none">Rp.</span>
+                  <input type="text" id="input-rangka" placeholder="0" oninput="formatRupiahAndCalculate(this)" class="w-full pl-9 pr-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-amber-500 bg-white">
+                </div>
+              </div>
+
+              <div class="flex items-center text-xs">
+                <label class="w-36 font-medium text-slate-600 uppercase text-left shrink-0">Harga Anyam</label>
+                <span class="mr-2 font-bold text-slate-600">:</span>
+                <div class="relative flex-1 flex items-center">
+                  <span class="absolute left-2.5 text-slate-500 font-semibold select-none">Rp.</span>
+                  <input type="text" id="input-anyam" placeholder="0" oninput="formatRupiahAndCalculate(this)" class="w-full pl-9 pr-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-amber-500 bg-white">
+                </div>
+              </div>
+
+              <div class="flex items-center text-xs">
+                <label class="w-36 font-medium text-slate-600 uppercase text-left shrink-0">Harga Finishing</label>
+                <span class="mr-2 font-bold text-slate-600">:</span>
+                <div class="relative flex-1 flex items-center">
+                  <span class="absolute left-2.5 text-slate-500 font-semibold select-none">Rp.</span>
+                  <input type="text" id="input-finishing" placeholder="0" oninput="formatRupiahAndCalculate(this)" class="w-full pl-9 pr-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-amber-500 bg-white">
+                </div>
+              </div>
+
+              <div class="flex items-center text-xs">
+                <label class="w-36 font-medium text-slate-600 uppercase text-left shrink-0">Accessories/Cushions</label>
+                <span class="mr-2 font-bold text-slate-600">:</span>
+                <div class="relative flex-1 flex items-center">
+                  <span class="absolute left-2.5 text-slate-500 font-semibold select-none">Rp.</span>
+                  <input type="text" id="input-accessories" placeholder="0" oninput="formatRupiahAndCalculate(this)" class="w-full pl-9 pr-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-amber-500 bg-white">
+                </div>
+              </div>
+
+              <div class="flex items-center text-xs">
+                <label class="w-36 font-bold text-slate-700 uppercase text-left shrink-0">Total Cost</label>
+                <span class="mr-2 font-bold text-slate-600">:</span>
+                <div class="relative flex-1 flex items-center">
+                  <span class="absolute left-2.5 text-slate-500 font-semibold select-none">Rp.</span>
+                  <input type="text" id="input-total-cost" readonly placeholder="0" class="w-full pl-9 pr-2 py-1 border border-gray-200 bg-gray-50 font-semibold text-slate-700 rounded focus:outline-none">
+                </div>
+              </div>
+
+              <div class="flex items-center text-xs">
+                <label class="w-36 font-bold text-slate-700 uppercase text-left shrink-0">50% Profit</label>
+                <span class="mr-2 font-bold text-slate-600">:</span>
+                <div class="relative flex-1 flex items-center">
+                  <span class="absolute left-2.5 text-slate-500 font-semibold select-none">Rp.</span>
+                  <input type="text" id="input-profit" readonly placeholder="0" class="w-full pl-9 pr-2 py-1 border border-gray-200 bg-gray-50 font-semibold text-slate-700 rounded focus:outline-none">
+                </div>
+              </div>
+
+              <div class="flex items-center text-xs">
+                <label class="w-36 font-bold text-slate-700 uppercase text-left shrink-0">Overhead (10%)</label>
+                <span class="mr-2 font-bold text-slate-600">:</span>
+                <div class="relative flex-1 flex items-center">
+                  <span class="absolute left-2.5 text-slate-500 font-semibold select-none">Rp.</span>
+                  <input type="text" id="input-overhead" readonly placeholder="0" class="w-full pl-9 pr-2 py-1 border border-gray-200 bg-gray-50 font-semibold text-slate-700 rounded focus:outline-none">
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <div>
+            <h2 class="text-lg font-bold text-slate-800 mb-1">Deskripsi Produk</h2>
+            <textarea id="input-description" rows="2" class="w-full text-gray-600 text-sm border border-gray-200 rounded p-2 focus:outline-none focus:ring-1 focus:ring-amber-500 bg-white/90 backdrop-blur-sm" placeholder="Deskripsi produk..."></textarea>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <div id="section-database" class="max-w-6xl mx-auto bg-white p-6 rounded-lg shadow-md no-print border border-gray-200">
+      <div class="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 mb-4">
+        <h2 class="text-xl font-bold text-slate-800">Data Tersimpan (Supabase Cloud)</h2>
+        
+        <div class="flex flex-wrap items-center gap-2">
+          <div class="relative flex-1 sm:flex-none">
+            <input type="text" id="search-input" oninput="onSearchInput()" placeholder="🔍 Cari item code / nama..." class="w-full sm:w-64 px-3 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-amber-500">
+          </div>
+          <button onclick="triggerImportExcel()" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-3 py-2 rounded transition flex items-center gap-1">
+            📥 Import Excel
+          </button>
+          <button onclick="exportExcel()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-3 py-2 rounded transition flex items-center gap-1">
+            📊 Export Excel
+          </button>
+          <button id="btn-hapus-semua" onclick="hapusSemuaData()" class="bg-red-600 hover:bg-red-700 text-white text-xs font-semibold px-3 py-2 rounded transition flex items-center gap-1">
+            🗑️ Hapus Semua
+          </button>
+        </div>
+      </div>
+
+      <input type="file" id="input-import-excel" accept=".xlsx, .xls" class="hidden" onchange="handleImportExcel(this)">
+      <input type="file" id="input-change-image" accept="image/*" class="hidden" onchange="handleReplaceImage(this)">
+
+      <div class="overflow-x-auto">
+        <table class="w-full border-collapse border border-gray-200 text-center text-xs min-w-[1300px]">
+          <thead class="bg-slate-100">
+            <tr>
+              <th class="border border-gray-200 p-2 text-center">Gambar</th>
+              <th class="border border-gray-200 p-2 text-center">Item Code</th>
+              <th class="border border-gray-200 p-2 text-center">Barcode</th>
+              <th class="border border-gray-200 p-2 text-center">Item Name</th>
+              <th class="border border-gray-200 p-2 text-center">Dimension</th>
+              <th class="border border-gray-200 p-2 text-center">Berat</th>
+              <th class="border border-gray-200 p-2 text-center">Rangka</th>
+              <th class="border border-gray-200 p-2 text-center">Anyam</th>
+              <th class="border border-gray-200 p-2 text-center">Finishing</th>
+              <th class="border border-gray-200 p-2 text-center">Accessories</th>
+              <th class="border border-gray-200 p-2 text-center">Total Cost</th>
+              <th class="border border-gray-200 p-2 text-center">Profit (50%)</th>
+              <th class="border border-gray-200 p-2 text-center">Overhead</th>
+              <th class="border border-gray-200 p-2 text-center bg-amber-100 font-bold">Harga (Rp.)</th>
+              <th class="border border-gray-200 p-2 w-1/4 text-center">Deskripsi</th>
+              <th class="border border-gray-200 p-2 text-center">Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="table-body">
+          </tbody>
+        </table>
+      </div>
+
+      <div id="pagination-container" class="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
+        <span id="page-info" class="text-xs text-gray-600 font-medium">
+          Menampilkan 0 dari 0 data
+        </span>
+        <div class="flex gap-2">
+          <button id="btn-prev" onclick="prevPage()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-xs font-semibold px-3 py-1.5 rounded transition">
+            ◀ Sebelumnya
+          </button>
+          <button id="btn-next" onclick="nextPage()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-xs font-semibold px-3 py-1.5 rounded transition">
+            Selanjutnya ▶
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="hover-preview" class="fixed z-50 hidden pointer-events-none transition-opacity duration-150 ease-out no-print">
+    <div class="bg-white p-1.5 rounded-lg shadow-2xl border border-gray-300 flex flex-col items-center">
+      <img id="hover-preview-img" src="" alt="Preview Hover" class="max-w-[260px] max-h-[260px] object-contain rounded">
+    </div>
+  </div>
+
+  <script>
+    // -------------------------------------------------------------
+    // INISIALISASI SUPABASE (GANTI URL & ANON KEY DENGAN MILIK ANDA)
+    // -------------------------------------------------------------
+    const SUPABASE_URL = 'https://pmnpctcomypxrezycdcm.supabase.co';
+    const SUPABASE_KEY = 'YOUR_ANON_PUBLIC_KEY';
+    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    // DATA USER UNTUK AUTHENTICATION
+    const USERS = {
+      'admin': { pass: 'admin123', role: 'admin' },
+      'operator': { pass: 'op123', role: 'operator' },
+      'user': { pass: 'user123', role: 'user' }
+    };
+
+    let currentUserRole = null;
+    let database = [];
+    let currentImageDataUrl = "";
+    let targetChangeImageIndex = null;
+
+    let currentPage = 1;
+    const itemsPerPage = 10;
+    let filteredDatabase = [];
+
+    // FUNGSI MEMUAT DATA DARI SUPABASE CLOUD
+    async function loadCloudData() {
+      try {
+        const { data, error } = await supabase.from('products').select('*').order('created_at', { ascending: false });
+        if (error) throw error;
+        database = data || [];
+        applySearchFilter();
+      } catch (err) {
+        console.error("Gagal mengambil data dari Supabase:", err.message);
+      }
+    }
+
+    // CEK REMEMBER ME SAAT PERTAMA KALI DIMUAT
+    window.addEventListener('DOMContentLoaded', () => {
+      const savedRole = localStorage.getItem('sae_user_role');
+      const savedUser = localStorage.getItem('sae_username');
+      if (savedRole && savedUser && USERS[savedUser]) {
+        currentUserRole = savedRole;
+        document.getElementById("login-modal").classList.add("hidden");
+        const appContent = document.getElementById("app-content");
+        appContent.classList.remove("filter", "blur-md", "pointer-events-none");
+        applyRolePermissions();
+      }
+      loadCloudData();
+    });
+
+    // FUNGSI BARCODE UTAMA
+    function generateMainBarcode() {
+      const code = document.getElementById("input-code").value.trim();
+      const barcodeSvg = document.getElementById("main-barcode");
+
+      if (code) {
+        try {
+          JsBarcode("#main-barcode", code, {
+            format: "CODE128",
+            lineColor: "#451a03",
+            width: 1.5,
+            height: 35,
+            displayValue: true,
+            fontSize: 10,
+            background: "transparent"
+          });
+          barcodeSvg.classList.remove("hidden");
+        } catch (e) {
+          barcodeSvg.classList.add("hidden");
+        }
+      } else {
+        barcodeSvg.classList.add("hidden");
+      }
+    }
+
+    // FUNGSI LOGIN & LOGOUT
+    function handleLogin(e) {
+      e.preventDefault();
+      const userVal = document.getElementById("login-username").value.trim().toLowerCase();
+      const passVal = document.getElementById("login-password").value.trim();
+      const rememberMe = document.getElementById("remember-me").checked;
+      const errEl = document.getElementById("login-error");
+
+      if (USERS[userVal] && USERS[userVal].pass === passVal) {
+        currentUserRole = USERS[userVal].role;
+        errEl.classList.add("hidden");
+        document.getElementById("login-modal").classList.add("hidden");
+        
+        if (rememberMe) {
+          localStorage.setItem('sae_user_role', currentUserRole);
+          localStorage.setItem('sae_username', userVal);
+        }
+
+        const appContent = document.getElementById("app-content");
+        appContent.classList.remove("filter", "blur-md", "pointer-events-none");
+        
+        applyRolePermissions();
+      } else {
+        errEl.classList.remove("hidden");
+      }
+    }
+
+    function handleLogout() {
+      currentUserRole = null;
+      localStorage.removeItem('sae_user_role');
+      localStorage.removeItem('sae_username');
+
+      document.getElementById("login-username").value = "";
+      document.getElementById("login-password").value = "";
+      document.getElementById("remember-me").checked = false;
+      document.getElementById("login-modal").classList.remove("hidden");
+      
+      const appContent = document.getElementById("app-content");
+      appContent.classList.add("filter", "blur-md", "pointer-events-none");
+
+      clearForm();
+    }
+
+    // PENERAPAN HAK AKSES ROLE
+    function applyRolePermissions() {
+      const roleBadge = document.getElementById("user-role-badge");
+      roleBadge.innerText = currentUserRole;
+
+      const btnSimpan = document.getElementById("btn-simpan");
+      const btnResetForm = document.getElementById("btn-reset-form");
+      const btnHapusSemua = document.getElementById("btn-hapus-semua");
+      const btnCetak = document.getElementById("btn-cetak");
+      const rincianBiayaContainer = document.getElementById("rincian-biaya-container");
+      const sectionDatabase = document.getElementById("section-database");
+      const btnSelectImage = document.getElementById("btn-select-image");
+      const hoverImageOverlay = document.getElementById("hover-image-overlay");
+
+      const inputsReadOnlyUser = [
+        "input-name", "input-dimension", "input-weight", "input-description"
+      ];
+
+      if (currentUserRole === "admin") {
+        btnSimpan.style.display = "flex";
+        btnResetForm.style.display = "flex";
+        btnHapusSemua.style.display = "flex";
+        btnCetak.style.display = "flex";
+        rincianBiayaContainer.style.display = "block";
+        sectionDatabase.style.display = "block";
+        btnSelectImage.style.display = "inline-block";
+        hoverImageOverlay.style.display = "flex";
+
+        document.getElementById("input-code").removeAttribute("readonly");
+        inputsReadOnlyUser.forEach(id => {
+          const el = document.getElementById(id);
+          el.removeAttribute("readonly");
+          el.classList.remove("bg-gray-100", "cursor-not-allowed");
+          el.classList.add("bg-white");
+        });
+
+      } else if (currentUserRole === "operator") {
+        btnSimpan.style.display = "flex";
+        btnResetForm.style.display = "flex";
+        btnHapusSemua.style.display = "none";
+        btnCetak.style.display = "flex";
+        rincianBiayaContainer.style.display = "block";
+        sectionDatabase.style.display = "block";
+        btnSelectImage.style.display = "inline-block";
+        hoverImageOverlay.style.display = "flex";
+
+        document.getElementById("input-code").removeAttribute("readonly");
+        inputsReadOnlyUser.forEach(id => {
+          const el = document.getElementById(id);
+          el.removeAttribute("readonly");
+          el.classList.remove("bg-gray-100", "cursor-not-allowed");
+          el.classList.add("bg-white");
+        });
+
+      } else if (currentUserRole === "user") {
+        btnSimpan.style.display = "none";
+        btnResetForm.style.display = "none";
+        btnHapusSemua.style.display = "none";
+        btnCetak.style.display = "flex";
+        rincianBiayaContainer.style.display = "none";
+        sectionDatabase.style.display = "none";
+        btnSelectImage.style.display = "none";
+        hoverImageOverlay.style.display = "none";
+
+        document.getElementById("input-code").removeAttribute("readonly");
+        inputsReadOnlyUser.forEach(id => {
+          const el = document.getElementById(id);
+          el.setAttribute("readonly", true);
+          el.classList.remove("bg-white");
+          el.classList.add("bg-gray-100", "cursor-not-allowed");
+        });
+      }
+
+      applySearchFilter();
+    }
+
+    function cleanNumber(valStr) {
+      if (!valStr) return 0;
+      const clean = valStr.replace(/[^0-9]/g, '');
+      return clean ? parseInt(clean, 10) : 0;
+    }
+
+    function formatRupiahAndCalculate(element) {
+      let value = element.value.replace(/[^0-9]/g, '');
+      element.value = value ? Number(value).toLocaleString('id-ID') : '';
+      calculatePricing();
+    }
+
+    function calculatePricing() {
+      const rangka = cleanNumber(document.getElementById("input-rangka").value);
+      const anyam = cleanNumber(document.getElementById("input-anyam").value);
+      const finishing = cleanNumber(document.getElementById("input-finishing").value);
+      const accessories = cleanNumber(document.getElementById("input-accessories").value);
+
+      const totalCost = rangka + anyam + finishing + accessories;
+      const profit = totalCost > 0 ? totalCost * 0.50 : 0;
+      const overhead = totalCost > 0 ? totalCost * 0.10 : 0;
+
+      const totalCostEl = document.getElementById("input-total-cost");
+      const profitEl = document.getElementById("input-profit");
+      const overheadEl = document.getElementById("input-overhead");
+      const priceEl = document.getElementById("input-price");
+      const labelRp = document.getElementById("label-rp-jual");
+
+      totalCostEl.value = totalCost > 0 ? Number(totalCost).toLocaleString('id-ID') : "0";
+      profitEl.value = profit > 0 ? Number(profit).toLocaleString('id-ID') : "0";
+      overheadEl.value = overhead > 0 ? Number(overhead).toLocaleString('id-ID') : "0";
+
+      if (profit === 0) {
+        priceEl.value = "Harga belum tersedia";
+        labelRp.classList.add("hidden");
+      } else {
+        const hargaJual = totalCost + profit + overhead;
+        priceEl.value = Number(hargaJual).toLocaleString('id-ID');
+        labelRp.classList.remove("hidden");
+      }
+    }
+
+    function previewImage(input) {
+      if (currentUserRole === 'user') return;
+
+      const file = input.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          currentImageDataUrl = e.target.result;
+          renderFrameImage(currentImageDataUrl);
+        }
+        reader.readAsDataURL(file);
+      }
+    }
+
+    function renderFrameImage(dataUrl) {
+      const imgEl = document.getElementById("product-img");
+      const placeholderEl = document.getElementById("image-placeholder");
+
+      if (dataUrl) {
+        imgEl.src = dataUrl;
+        imgEl.classList.remove("hidden");
+        placeholderEl.classList.add("hidden");
+      } else {
+        imgEl.src = "";
+        imgEl.classList.add("hidden");
+        placeholderEl.classList.remove("hidden");
+      }
+    }
+
+    // SIMPAN / UPDATE KE SUPABASE
+    async function simpanData() {
+      if (currentUserRole === 'user') return;
+
+      const code = document.getElementById("input-code").value.trim();
+      const name = document.getElementById("input-name").value.trim();
+      
+      if (!code || !name) {
+        alert("Mohon isi minimal Item Code dan Item Name!");
+        return;
+      }
+
+      const itemData = {
+        code: code,
+        name: name,
+        image: currentImageDataUrl,
+        dimension: document.getElementById("input-dimension").value.trim(),
+        weight: document.getElementById("input-weight").value.trim(),
+        description: document.getElementById("input-description").value.trim(),
+        rangka: document.getElementById("input-rangka").value,
+        anyam: document.getElementById("input-anyam").value,
+        finishing: document.getElementById("input-finishing").value,
+        accessories: document.getElementById("input-accessories").value,
+        totalCost: document.getElementById("input-total-cost").value,
+        profit: document.getElementById("input-profit").value,
+        overhead: document.getElementById("input-overhead").value,
+        price: document.getElementById("input-price").value
+      };
+
+      const { error } = await supabase.from('products').upsert(itemData, { onConflict: 'code' });
+
+      if (error) {
+        alert("Gagal menyimpan ke Supabase: " + error.message);
+      } else {
+        alert(`Data dengan kode ${code} berhasil tersimpan di Cloud!`);
+        await loadCloudData();
+        clearForm();
+      }
+    }
+
+    function onSearchInput() {
+      currentPage = 1;
+      applySearchFilter();
+    }
+
+    function applySearchFilter() {
+      const query = document.getElementById("search-input").value.toLowerCase().trim();
+      if (!query) {
+        filteredDatabase = [...database];
+      } else {
+        filteredDatabase = database.filter(item => 
+          item.code.toLowerCase().includes(query) || 
+          item.name.toLowerCase().includes(query) ||
+          (item.description && item.description.toLowerCase().includes(query))
+        );
+      }
+      renderTable();
+    }
+
+    function renderTable() {
+      if (currentUserRole === 'user') return;
+
+      const tbody = document.getElementById("table-body");
+      tbody.innerHTML = "";
+
+      if (filteredDatabase.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="16" class="text-center p-4 text-gray-500">Belum ada data tersimpan / tidak ditemukan</td></tr>`;
+        updatePaginationControls(0);
+        return;
+      }
+
+      const totalItems = filteredDatabase.length;
+      const totalPages = Math.ceil(totalItems / itemsPerPage);
+
+      if (currentPage > totalPages) currentPage = totalPages;
+      if (currentPage < 1) currentPage = 1;
+
+      const startIndex = (currentPage - 1) * itemsPerPage;
+      const endIndex = Math.min(startIndex + itemsPerPage, totalItems);
+      const pageItems = filteredDatabase.slice(startIndex, endIndex);
+
+      pageItems.forEach((item, i) => {
+        const originalIndex = database.findIndex(d => d.code === item.code);
+        
+        const tr = document.createElement("tr");
+        tr.className = "hover:bg-gray-50 align-middle text-center";
+        
+        let displayPrice = item.price;
+        if (displayPrice !== "Harga belum tersedia" && displayPrice !== "Data Belum Lengkap" && displayPrice) {
+          displayPrice = `Rp. ${displayPrice}`;
+        } else {
+          displayPrice = "Harga belum tersedia";
+        }
+
+        const btnHapusHtml = currentUserRole === 'admin' 
+          ? `<button onclick="hapusData(${originalIndex})" class="bg-red-500 hover:bg-red-600 text-white text-[10px] px-2 py-1 rounded transition">🗑️ Hapus</button>` 
+          : '';
+
+        tr.innerHTML = `
+          <td class="border border-gray-200 p-1.5 w-16 align-middle">
+            <div class="flex flex-col items-center gap-1">
+              <div class="w-12 h-12 bg-gray-50 rounded flex items-center justify-center overflow-hidden border mx-auto">
+                ${item.image 
+                  ? `<img src="${item.image}" onmouseenter="showHoverPreview(event, ${originalIndex})" onmousemove="moveHoverPreview(event)" onmouseleave="hideHoverPreview()" class="max-w-full max-h-full object-contain cursor-pointer">` 
+                  : `<span class="text-[10px] text-gray-400">No Img</span>`}
+              </div>
+              <button onclick="triggerChangeImage(${originalIndex})" class="text-[9px] text-blue-600 hover:text-blue-800 font-semibold underline no-print">
+                📷 Ganti
+              </button>
+            </div>
+          </td>
+          <td class="border border-gray-200 p-1.5 font-semibold text-slate-700 whitespace-nowrap text-center align-middle">${item.code}</td>
+          <td class="border border-gray-200 p-1.5 align-middle">
+            <svg id="table-barcode-${i}" class="max-h-10 mx-auto"></svg>
+          </td>
+          <td class="border border-gray-200 p-1.5 text-slate-800 text-center align-middle">${item.name}</td>
+          <td class="border border-gray-200 p-1.5 whitespace-nowrap text-center align-middle">${item.dimension || '-'}</td>
+          <td class="border border-gray-200 p-1.5 whitespace-nowrap text-center align-middle">${item.weight || '-'}</td>
+          <td class="border border-gray-200 p-1.5 whitespace-nowrap text-center align-middle">${item.rangka ? 'Rp. ' + item.rangka : '-'}</td>
+          <td class="border border-gray-200 p-1.5 whitespace-nowrap text-center align-middle">${item.anyam ? 'Rp. ' + item.anyam : '-'}</td>
+          <td class="border border-gray-200 p-1.5 whitespace-nowrap text-center align-middle">${item.finishing ? 'Rp. ' + item.finishing : '-'}</td>
+          <td class="border border-gray-200 p-1.5 whitespace-nowrap text-center align-middle">${item.accessories ? 'Rp. ' + item.accessories : '-'}</td>
+          <td class="border border-gray-200 p-1.5 whitespace-nowrap text-center align-middle font-medium">${item.totalCost && item.totalCost !== '0' ? 'Rp. ' + item.totalCost : '-'}</td>
+          <td class="border border-gray-200 p-1.5 whitespace-nowrap text-center align-middle">${item.profit && item.profit !== '0' ? 'Rp. ' + item.profit : '-'}</td>
+          <td class="border border-gray-200 p-1.5 whitespace-nowrap text-center align-middle">${item.overhead && item.overhead !== '0' ? 'Rp. ' + item.overhead : '-'}</td>
+          <td class="border border-gray-200 p-1.5 font-bold text-amber-900 bg-amber-50 whitespace-nowrap text-center align-middle">${displayPrice}</td>
+          <td class="border border-gray-200 p-1.5 text-[11px] text-gray-600 leading-relaxed text-center align-middle">${item.description || '-'}</td>
+          <td class="border border-gray-200 p-1.5 whitespace-nowrap text-center align-middle no-print">
+            <div class="flex gap-1 justify-center">
+              <button onclick="editData(${originalIndex})" class="bg-amber-500 hover:bg-amber-600 text-white text-[10px] px-2 py-1 rounded transition">
+                ✏️ Edit
+              </button>
+              ${btnHapusHtml}
+              <button onclick="cetakSatuData(${originalIndex})" class="bg-slate-600 hover:bg-slate-700 text-white text-[10px] px-2 py-1 rounded transition">
+                🖨️ Cetak
+              </button>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(tr);
+
+        try {
+          JsBarcode(`#table-barcode-${i}`, item.code, {
+            format: "CODE128",
+            width: 1.2,
+            height: 25,
+            displayValue: true,
+            fontSize: 9
+          });
+        } catch(e){}
+      });
+
+      updatePaginationControls(totalItems, startIndex + 1, endIndex, totalPages);
+    }
+
+    function updatePaginationControls(totalItems, start = 0, end = 0, totalPages = 1) {
+      const pageInfo = document.getElementById("page-info");
+      const btnPrev = document.getElementById("btn-prev");
+      const btnNext = document.getElementById("btn-next");
+
+      if (totalItems === 0) {
+        pageInfo.innerText = "Menampilkan 0 dari 0 data";
+        btnPrev.disabled = true;
+        btnNext.disabled = true;
+        return;
+      }
+
+      pageInfo.innerText = `Menampilkan ${start}-${end} dari ${totalItems} data (Halaman ${currentPage} dari ${totalPages})`;
+      btnPrev.disabled = currentPage <= 1;
+      btnNext.disabled = currentPage >= totalPages;
+    }
+
+    function prevPage() {
+      if (currentPage > 1) {
+        currentPage--;
+        renderTable();
+      }
+    }
+
+    function nextPage() {
+      const totalPages = Math.ceil(filteredDatabase.length / itemsPerPage);
+      if (currentPage < totalPages) {
+        currentPage++;
+        renderTable();
+      }
+    }
+
+    function triggerChangeImage(index) {
+      if (currentUserRole === 'user') return;
+      targetChangeImageIndex = index;
+      document.getElementById("input-change-image").click();
+    }
+
+    async function handleReplaceImage(input) {
+      if (currentUserRole === 'user') return;
+
+      const file = input.files[0];
+      if (file && targetChangeImageIndex !== null) {
+        const reader = new FileReader();
+        reader.onload = async function(e) {
+          const newImg = e.target.result;
+          const targetCode = database[targetChangeImageIndex].code;
+
+          const { error } = await supabase.from('products').update({ image: newImg }).eq('code', targetCode);
+
+          if (error) {
+            alert("Gagal memperbarui gambar di Cloud: " + error.message);
+          } else {
+            alert(`Gambar untuk item "${targetCode}" berhasil diperbarui di Cloud!`);
+            await loadCloudData();
+          }
+
+          input.value = "";
+          targetChangeImageIndex = null;
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    function showHoverPreview(event, index) {
+      const item = database[index];
+      if (!item || !item.image) return;
+
+      const previewBox = document.getElementById("hover-preview");
+      const previewImg = document.getElementById("hover-preview-img");
+
+      previewImg.src = item.image;
+      previewBox.classList.remove("hidden");
+      moveHoverPreview(event);
+    }
+
+    function moveHoverPreview(event) {
+      const previewBox = document.getElementById("hover-preview");
+      if (previewBox.classList.contains("hidden")) return;
+
+      const mouseX = event.clientX;
+      const mouseY = event.clientY;
+
+      let topPos = mouseY + 15;
+      let leftPos = mouseX + 15;
+
+      if (leftPos + 280 > window.innerWidth) {
+        leftPos = mouseX - 280;
+      }
+      if (topPos + 280 > window.innerHeight) {
+        topPos = mouseY - 280;
+      }
+
+      previewBox.style.top = topPos + "px";
+      previewBox.style.left = leftPos + "px";
+    }
+
+    function hideHoverPreview() {
+      const previewBox = document.getElementById("hover-preview");
+      previewBox.classList.add("hidden");
+      document.getElementById("hover-preview-img").src = "";
+    }
+
+    function handleCodeKeydown(event) {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        cekHarga();
+      }
+    }
+
+    function cekHarga() {
+      const searchCode = document.getElementById("input-code").value.trim();
+      if (!searchCode) {
+        alert("Masukkan kode item terlebih dahulu!");
+        return;
+      }
+
+      const foundIndex = database.findIndex(item => item.code.toLowerCase() === searchCode.toLowerCase());
+
+      if (foundIndex !== -1) {
+        editData(foundIndex);
+      } else {
+        alert(`Data dengan kode ${searchCode} tidak ditemukan.`);
+      }
+    }
+
+    function editData(index) {
+      const item = database[index];
+      if (!item) return;
+
+      document.getElementById("input-code").value = item.code;
+      document.getElementById("input-name").value = item.name;
+      document.getElementById("input-dimension").value = item.dimension || "";
+      document.getElementById("input-weight").value = item.weight || "";
+      document.getElementById("input-description").value = item.description || "";
+
+      document.getElementById("input-rangka").value = item.rangka || "";
+      document.getElementById("input-anyam").value = item.anyam || "";
+      document.getElementById("input-finishing").value = item.finishing || "";
+      document.getElementById("input-accessories").value = item.accessories || "";
+
+      calculatePricing();
+      generateMainBarcode();
+
+      currentImageDataUrl = item.image || "";
+      renderFrameImage(currentImageDataUrl);
+      if(currentUserRole !== 'user') document.getElementById("input-name").focus();
+    }
+
+    // HAPUS DATA DARI SUPABASE
+    async function hapusData(index) {
+      if (currentUserRole !== 'admin') return;
+
+      const item = database[index];
+      if (confirm(`Apakah Anda yakin ingin menghapus data "${item.name}" (${item.code}) dari Cloud?`)) {
+        const { error } = await supabase.from('products').delete().eq('code', item.code);
+        
+        if (error) {
+          alert("Gagal menghapus dari Supabase: " + error.message);
+        } else {
+          alert("Data berhasil dihapus!");
+          await loadCloudData();
+          clearForm();
+        }
+      }
+    }
+
+    // HAPUS SEMUA DATA DARI SUPABASE
+    async function hapusSemuaData() {
+      if (currentUserRole !== 'admin') return;
+
+      if (database.length === 0) {
+        alert("Belum ada data tersimpan yang dapat dihapus.");
+        return;
+      }
+
+      if (confirm("Apakah Anda yakin ingin MENGHAPUS SEMUA DATA dari Cloud? Tindakan ini tidak dapat dibatalkan!")) {
+        const { error } = await supabase.from('products').delete().neq('code', '');
+        
+        if (error) {
+          alert("Gagal menghapus semua data: " + error.message);
+        } else {
+          alert("Semua data berhasil dihapus dari Cloud!");
+          await loadCloudData();
+          clearForm();
+        }
+      }
+    }
+
+    function cetakData() {
+      window.print();
+    }
+
+    function cetakSatuData(index) {
+      editData(index);
+      window.print();
+    }
+
+    async function exportExcel() {
+      if (currentUserRole === 'user') return;
+      if (database.length === 0) {
+        alert("Tidak ada data untuk diekspor!");
+        return;
+      }
+
+      const workbook = new ExcelJS.Workbook();
+      const worksheet = workbook.addWorksheet("Data Produk");
+
+      worksheet.columns = [
+        { header: "GAMBAR", key: "image", width: 16 },
+        { header: "ITEM CODE", key: "code", width: 16 },
+        { header: "ITEM NAME", key: "name", width: 25 },
+        { header: "DIMENSION (CM)", key: "dimension", width: 18 },
+        { header: "BERAT BARANG", key: "weight", width: 15 },
+        { header: "RANGKA", key: "rangka", width: 15 },
+        { header: "ANYAM", key: "anyam", width: 15 },
+        { header: "FINISHING", key: "finishing", width: 15 },
+        { header: "ACCESSORIES", key: "accessories", width: 15 },
+        { header: "TOTAL COST", key: "totalCost", width: 18 },
+        { header: "50% PROFIT", key: "profit", width: 18 },
+        { header: "OVERHEAD (10%)", key: "overhead", width: 18 },
+        { header: "HARGA (RP.)", key: "price", width: 25 },
+        { header: "DESKRIPSI PRODUK", key: "description", width: 45 }
+      ];
+
+      worksheet.getRow(1).font = { bold: true, color: { argb: "FFFFFF" } };
+      worksheet.getRow(1).fill = {
+        type: "pattern",
+        pattern: "solid",
+        fgColor: { argb: "334155" }
+      };
+
+      database.forEach((item, index) => {
+        const rowNum = index + 2;
+        const row = worksheet.addRow({
+          image: "",
+          code: item.code,
+          name: item.name,
+          dimension: item.dimension,
+          weight: item.weight,
+          rangka: item.rangka,
+          anyam: item.anyam,
+          finishing: item.finishing,
+          accessories: item.accessories,
+          totalCost: item.totalCost,
+          profit: item.profit,
+          overhead: item.overhead,
+          price: item.price,
+          description: item.description
+        });
+
+        row.height = 60;
+        row.alignment = { vertical: 'middle' };
+
+        if (item.image && item.image.startsWith("data:image")) {
+          try {
+            const base64Data = item.image.split(",")[1];
+            let ext = "png";
+            if (item.image.includes("jpeg") || item.image.includes("jpg")) ext = "jpeg";
+
+            const imageId = workbook.addImage({
+              base64: base64Data,
+              extension: ext,
+            });
+
+            worksheet.addImage(imageId, {
+              tl: { col: 0, row: rowNum - 1 },
+              ext: { width: 70, height: 70 },
+              editAs: "oneCell"
+            });
+          } catch (e) {
+            console.error("Gagal menambahkan gambar ke Excel:", e);
+          }
+        }
+      });
+
+      const buffer = await workbook.xlsx.writeBuffer();
+      const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+      saveAs(blob, "Data_Produk_Lengkap.xlsx");
+    }
+
+    function triggerImportExcel() {
+      if (currentUserRole === 'user') return;
+      document.getElementById("input-import-excel").click();
+    }
+
+    // IMPORT EXCEL & SIMPAN MASSAL KE SUPABASE
+    async function handleImportExcel(input) {
+      if (currentUserRole === 'user') return;
+
+      const file = input.files[0];
+      if (!file) return;
+
+      try {
+        const workbook = new ExcelJS.Workbook();
+        await workbook.xlsx.load(file);
+        const worksheet = workbook.getWorksheet(1);
+
+        let importList = [];
+
+        worksheet.eachRow((row, rowNumber) => {
+          if (rowNumber === 1) return;
+
+          const code = row.getCell(2).value ? String(row.getCell(2).value).trim() : "";
+          const name = row.getCell(3).value ? String(row.getCell(3).value).trim() : "";
+
+          if (code && name) {
+            const itemData = {
+              code: code,
+              name: name,
+              image: "",
+              dimension: row.getCell(4).value ? String(row.getCell(4).value).trim() : "",
+              weight: row.getCell(5).value ? String(row.getCell(5).value).trim() : "",
+              rangka: row.getCell(6).value ? String(row.getCell(6).value).trim() : "",
+              anyam: row.getCell(7).value ? String(row.getCell(7).value).trim() : "",
+              finishing: row.getCell(8).value ? String(row.getCell(8).value).trim() : "",
+              accessories: row.getCell(9).value ? String(row.getCell(9).value).trim() : "",
+              totalCost: row.getCell(10).value ? String(row.getCell(10).value).trim() : "",
+              profit: row.getCell(11).value ? String(row.getCell(11).value).trim() : "",
+              overhead: row.getCell(12).value ? String(row.getCell(12).value).trim() : "",
+              price: row.getCell(13).value ? String(row.getCell(13).value).trim() : "Harga belum tersedia",
+              description: row.getCell(14).value ? String(row.getCell(14).value).trim() : ""
+            };
+            importList.push(itemData);
+          }
+        });
+
+        if (worksheet.getImages) {
+          const images = worksheet.getImages();
+          images.forEach(img => {
+            const rowIdx = Math.floor(img.range.tl.row) - 1;
+            const media = workbook.model.media.find(m => m.index === img.imageId);
+            if (media && importList[rowIdx]) {
+              const base64 = `data:image/${media.extension};base64,${media.buffer.toString('base64')}`;
+              importList[rowIdx].image = base64;
+            }
+          });
+        }
+
+        if (importList.length > 0) {
+          const { error } = await supabase.from('products').upsert(importList, { onConflict: 'code' });
+          if (error) throw error;
+          
+          await loadCloudData();
+          alert(`Berhasil mengimpor dan menyimpan ${importList.length} data ke Cloud!`);
+        }
+      } catch (err) {
+        console.error(err);
+        alert("Gagal membaca/mengimpor file Excel: " + err.message);
+      } finally {
+        input.value = "";
+      }
+    }
+
+    function clearForm() {
+      document.getElementById("input-code").value = "";
+      document.getElementById("input-name").value = "";
+      document.getElementById("input-dimension").value = "";
+      document.getElementById("input-weight").value = "";
+      document.getElementById("input-description").value = "";
+      
+      document.getElementById("input-rangka").value = "";
+      document.getElementById("input-anyam").value = "";
+      document.getElementById("input-finishing").value = "";
+      document.getElementById("input-accessories").value = "";
+      
+      calculatePricing();
+      generateMainBarcode();
+
+      document.getElementById("input-image").value = "";
+      currentImageDataUrl = "";
+      renderFrameImage("");
+    }
+
+    // Setup Awal
+    calculatePricing();
+  </script>
+
+</body>
+</html>
