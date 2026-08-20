@@ -8,8 +8,6 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
-  <!-- SUPABASE SDK -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
     @font-face {
@@ -128,7 +126,7 @@
     </div>
   </div>
 
-  <!-- KONTEN UTAMA DENGAN EFEK BLUR KETIKA BELUM LOGIN -->
+  <!-- KONTEN UTAMA -->
   <div id="app-content" class="filter blur-md pointer-events-none transition-all duration-300">
 
     <div class="max-w-6xl mx-auto mb-4 flex justify-between items-center bg-white p-3 px-4 rounded-lg shadow-sm border border-gray-200 no-print">
@@ -163,7 +161,6 @@
       <div class="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
         
         <div class="md:col-span-7 flex flex-col relative">
-          
           <div id="image-frame" class="border-2 border-amber-900/20 rounded-md h-[420px] flex items-center justify-center bg-transparent relative overflow-hidden group">
             <img id="product-img" src="" alt="Gambar Produk" class="w-full h-full object-contain hidden">
             
@@ -325,12 +322,15 @@
 
     <div id="section-database" class="max-w-6xl mx-auto bg-white p-6 rounded-lg shadow-md no-print border border-gray-200">
       <div class="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 mb-4">
-        <h2 class="text-xl font-bold text-slate-800">Data Tersimpan (Supabase Cloud)</h2>
+        <h2 class="text-xl font-bold text-slate-800">Data Tersimpan (Cloud Drive)</h2>
         
         <div class="flex flex-wrap items-center gap-2">
           <div class="relative flex-1 sm:flex-none">
             <input type="text" id="search-input" oninput="onSearchInput()" placeholder="🔍 Cari item code / nama..." class="w-full sm:w-64 px-3 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-amber-500">
           </div>
+          <button onclick="loadDataFromCloud()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-3 py-2 rounded transition flex items-center gap-1">
+            🔄 Refresh Data
+          </button>
           <button onclick="triggerImportExcel()" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-3 py-2 rounded transition flex items-center gap-1">
             📥 Import Excel
           </button>
@@ -396,16 +396,8 @@
   </div>
 
   <script>
-    // -------------------------------------------------------------
-    // INISIALISASI SUPABASE (GANTI KEY DENGAN ANON PUBLIC KEY ANDA)
-    // -------------------------------------------------------------
-    const SUPABASE_URL = 'https://pmnpctcomypxrezycdcm.supabase.co';
-    const SUPABASE_KEY = 'sb_publishable_hJdKchounnrOt1DfhMhF-w_28D2yz3E'; // <--- Masukkan Anon Key Anda di sini
-    
-    // Menggunakan variabel supabaseClient
-    const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+    const API_URL = "https://script.google.com/macros/s/AKfycbyFqqmJRd0J6Kl07GvvGgYPFJosch2CuJ3nl1PoF-nxKkEo9Zxj6ovG8sCTygeuGDLz/exec";
 
-    // DATA USER UNTUK AUTHENTICATION
     const USERS = {
       'admin': { pass: 'admin123', role: 'admin' },
       'operator': { pass: 'op123', role: 'operator' },
@@ -416,25 +408,27 @@
     let database = [];
     let currentImageDataUrl = "";
     let targetChangeImageIndex = null;
+    let editIndex = null; // Penanda index data yang sedang diedit
 
     let currentPage = 1;
     const itemsPerPage = 10;
     let filteredDatabase = [];
 
-    // FUNGSI MEMUAT DATA DARI SUPABASE CLOUD
-    async function loadCloudData() {
-      if (!supabaseClient) return;
+    async function loadDataFromCloud() {
+      if (!API_URL || API_URL === "PASTE_WEB_APP_URL_DISINI") return;
+
       try {
-        const { data, error } = await supabaseClient.from('products').select('*').order('created_at', { ascending: false });
-        if (error) throw error;
-        database = data || [];
-        applySearchFilter();
-      } catch (err) {
-        console.error("Gagal mengambil data dari Supabase:", err.message);
+        const res = await fetch(API_URL);
+        const resData = await res.json();
+        if (resData.status === "success") {
+          database = resData.data;
+          applySearchFilter();
+        }
+      } catch (e) {
+        console.error("Gagal memuat data dari cloud:", e);
       }
     }
 
-    // CEK REMEMBER ME SAAT PERTAMA KALI DIMUAT
     window.addEventListener('DOMContentLoaded', () => {
       const savedRole = localStorage.getItem('sae_user_role');
       const savedUser = localStorage.getItem('sae_username');
@@ -445,10 +439,9 @@
         appContent.classList.remove("filter", "blur-md", "pointer-events-none");
         applyRolePermissions();
       }
-      loadCloudData();
+      loadDataFromCloud();
     });
 
-    // FUNGSI BARCODE UTAMA
     function generateMainBarcode() {
       const code = document.getElementById("input-code").value.trim();
       const barcodeSvg = document.getElementById("main-barcode");
@@ -473,7 +466,6 @@
       }
     }
 
-    // FUNGSI LOGIN & LOGOUT
     function handleLogin(e) {
       e.preventDefault();
       const userVal = document.getElementById("login-username").value.trim().toLowerCase();
@@ -516,7 +508,6 @@
       clearForm();
     }
 
-    // PENERAPAN HAK AKSES ROLE
     function applyRolePermissions() {
       const roleBadge = document.getElementById("user-role-badge");
       roleBadge.innerText = currentUserRole;
@@ -663,7 +654,7 @@
       }
     }
 
-    // SIMPAN / UPDATE KE SUPABASE
+    // SIMPAN / UPDATE DATA KE CLOUD DENGAN PENANGANAN EDIT
     async function simpanData() {
       if (currentUserRole === 'user') return;
 
@@ -675,6 +666,20 @@
         return;
       }
 
+      // Cek duplikasi (Abaikan item yang sedang diedit sendiri)
+      const isCodeExist = database.some((item, idx) => item.code.toLowerCase() === code.toLowerCase() && idx !== editIndex);
+      const isNameExist = database.some((item, idx) => item.name.toLowerCase() === name.toLowerCase() && idx !== editIndex);
+
+      if (isCodeExist) {
+        alert(`❌ Gagal!\nItem Code "${code}" sudah digunakan oleh item lain.`);
+        return;
+      }
+
+      if (isNameExist) {
+        alert(`❌ Gagal!\nItem Name "${name}" sudah digunakan oleh item lain.`);
+        return;
+      }
+
       const itemData = {
         code: code,
         name: name,
@@ -682,24 +687,57 @@
         dimension: document.getElementById("input-dimension").value.trim(),
         weight: document.getElementById("input-weight").value.trim(),
         description: document.getElementById("input-description").value.trim(),
+        
         rangka: document.getElementById("input-rangka").value,
         anyam: document.getElementById("input-anyam").value,
         finishing: document.getElementById("input-finishing").value,
         accessories: document.getElementById("input-accessories").value,
-        total_cost: document.getElementById("input-total-cost").value, // Menggunakan total_cost (snake_case)
+        totalCost: document.getElementById("input-total-cost").value,
         profit: document.getElementById("input-profit").value,
         overhead: document.getElementById("input-overhead").value,
-        price: document.getElementById("input-price").value
+        price: document.getElementById("input-price").value,
+
+        isUpdate: editIndex !== null,
+        oldCode: editIndex !== null ? database[editIndex].code : ""
       };
 
-      const { error } = await supabaseClient.from('products').upsert(itemData, { onConflict: 'code' });
+      const btnSimpan = document.getElementById("btn-simpan");
+      btnSimpan.disabled = true;
+      btnSimpan.innerText = editIndex !== null ? "⏳ Memperbarui..." : "⏳ Menyimpan...";
 
-      if (error) {
-        alert("Gagal menyimpan ke Supabase: " + error.message);
-      } else {
-        alert(`Data dengan kode ${code} berhasil tersimpan di Cloud!`);
-        await loadCloudData();
+      if (!API_URL || API_URL === "PASTE_WEB_APP_URL_DISINI") {
+        if (editIndex !== null) {
+          database[editIndex] = itemData;
+          alert("Data berhasil diperbarui (Lokal)!");
+        } else {
+          database.push(itemData);
+          alert("Data baru berhasil disimpan (Lokal)!");
+        }
+        applySearchFilter();
         clearForm();
+        btnSimpan.disabled = false;
+        return;
+      }
+
+      try {
+        const res = await fetch(API_URL, {
+          method: 'POST',
+          body: JSON.stringify(itemData)
+        });
+        const resData = await res.json();
+
+        if (resData.status === "success") {
+          alert(editIndex !== null ? "Data berhasil diperbarui di Cloud!" : "Data berhasil disimpan ke Cloud!");
+          await loadDataFromCloud();
+          clearForm();
+        } else {
+          alert("Gagal memproses data: " + resData.message);
+        }
+      } catch (err) {
+        console.error(err);
+        alert("Terjadi kesalahan jaringan saat memproses data.");
+      } finally {
+        btnSimpan.disabled = false;
       }
     }
 
@@ -761,9 +799,6 @@
           ? `<button onclick="hapusData(${originalIndex})" class="bg-red-500 hover:bg-red-600 text-white text-[10px] px-2 py-1 rounded transition">🗑️ Hapus</button>` 
           : '';
 
-        // Mengambil total_cost dari database
-        const itemTotalCost = item.total_cost || item.totalCost || '-';
-
         tr.innerHTML = `
           <td class="border border-gray-200 p-1.5 w-16 align-middle">
             <div class="flex flex-col items-center gap-1">
@@ -788,7 +823,7 @@
           <td class="border border-gray-200 p-1.5 whitespace-nowrap text-center align-middle">${item.anyam ? 'Rp. ' + item.anyam : '-'}</td>
           <td class="border border-gray-200 p-1.5 whitespace-nowrap text-center align-middle">${item.finishing ? 'Rp. ' + item.finishing : '-'}</td>
           <td class="border border-gray-200 p-1.5 whitespace-nowrap text-center align-middle">${item.accessories ? 'Rp. ' + item.accessories : '-'}</td>
-          <td class="border border-gray-200 p-1.5 whitespace-nowrap text-center align-middle font-medium">${itemTotalCost && itemTotalCost !== '0' && itemTotalCost !== '-' ? 'Rp. ' + itemTotalCost : '-'}</td>
+          <td class="border border-gray-200 p-1.5 whitespace-nowrap text-center align-middle font-medium">${item.totalCost && item.totalCost !== '0' ? 'Rp. ' + item.totalCost : '-'}</td>
           <td class="border border-gray-200 p-1.5 whitespace-nowrap text-center align-middle">${item.profit && item.profit !== '0' ? 'Rp. ' + item.profit : '-'}</td>
           <td class="border border-gray-200 p-1.5 whitespace-nowrap text-center align-middle">${item.overhead && item.overhead !== '0' ? 'Rp. ' + item.overhead : '-'}</td>
           <td class="border border-gray-200 p-1.5 font-bold text-amber-900 bg-amber-50 whitespace-nowrap text-center align-middle">${displayPrice}</td>
@@ -859,25 +894,23 @@
       document.getElementById("input-change-image").click();
     }
 
-    async function handleReplaceImage(input) {
+    function handleReplaceImage(input) {
       if (currentUserRole === 'user') return;
 
       const file = input.files[0];
       if (file && targetChangeImageIndex !== null) {
         const reader = new FileReader();
-        reader.onload = async function(e) {
-          const newImg = e.target.result;
-          const targetCode = database[targetChangeImageIndex].code;
-
-          const { error } = await supabaseClient.from('products').update({ image: newImg }).eq('code', targetCode);
-
-          if (error) {
-            alert("Gagal memperbarui gambar di Cloud: " + error.message);
-          } else {
-            alert(`Gambar untuk item "${targetCode}" berhasil diperbarui di Cloud!`);
-            await loadCloudData();
+        reader.onload = function(e) {
+          database[targetChangeImageIndex].image = e.target.result;
+          
+          const currentCodeInForm = document.getElementById("input-code").value.trim();
+          if (currentCodeInForm.toLowerCase() === database[targetChangeImageIndex].code.toLowerCase()) {
+            currentImageDataUrl = e.target.result;
+            renderFrameImage(currentImageDataUrl);
           }
 
+          applySearchFilter();
+          alert(`Gambar untuk item "${database[targetChangeImageIndex].code}" berhasil diganti! Klik Update Data untuk memperbarui di Cloud.`);
           input.value = "";
           targetChangeImageIndex = null;
         };
@@ -951,6 +984,8 @@
       const item = database[index];
       if (!item) return;
 
+      editIndex = index; // Tandai bahwa sistem sedang dalam mode Edit
+
       document.getElementById("input-code").value = item.code;
       document.getElementById("input-name").value = item.name;
       document.getElementById("input-dimension").value = item.dimension || "";
@@ -967,29 +1002,28 @@
 
       currentImageDataUrl = item.image || "";
       renderFrameImage(currentImageDataUrl);
+
+      // Ubah tombol Simpan menjadi Update Data
+      const btnSimpan = document.getElementById("btn-simpan");
+      btnSimpan.innerText = "✏️ Update Data";
+      btnSimpan.classList.remove("bg-[#c2a378]", "hover:bg-[#b09066]");
+      btnSimpan.classList.add("bg-amber-600", "hover:bg-amber-700", "text-white");
+
       if(currentUserRole !== 'user') document.getElementById("input-name").focus();
     }
 
-    // HAPUS DATA DARI SUPABASE
-    async function hapusData(index) {
+    function hapusData(index) {
       if (currentUserRole !== 'admin') return;
 
       const item = database[index];
-      if (confirm(`Apakah Anda yakin ingin menghapus data "${item.name}" (${item.code}) dari Cloud?`)) {
-        const { error } = await supabaseClient.from('products').delete().eq('code', item.code);
-        
-        if (error) {
-          alert("Gagal menghapus dari Supabase: " + error.message);
-        } else {
-          alert("Data berhasil dihapus!");
-          await loadCloudData();
-          clearForm();
-        }
+      if (confirm(`Apakah Anda yakin ingin menghapus data "${item.name}" (${item.code})?`)) {
+        database.splice(index, 1);
+        applySearchFilter();
+        clearForm();
       }
     }
 
-    // HAPUS SEMUA DATA DARI SUPABASE
-    async function hapusSemuaData() {
+    function hapusSemuaData() {
       if (currentUserRole !== 'admin') return;
 
       if (database.length === 0) {
@@ -997,16 +1031,11 @@
         return;
       }
 
-      if (confirm("Apakah Anda yakin ingin MENGHAPUS SEMUA DATA dari Cloud? Tindakan ini tidak dapat dibatalkan!")) {
-        const { error } = await supabaseClient.from('products').delete().neq('code', '');
-        
-        if (error) {
-          alert("Gagal menghapus semua data: " + error.message);
-        } else {
-          alert("Semua data berhasil dihapus dari Cloud!");
-          await loadCloudData();
-          clearForm();
-        }
+      if (confirm("Apakah Anda yakin ingin MENGHAPUS SEMUA DATA tersimpan? Tindakan ini tidak dapat dibatalkan!")) {
+        database = [];
+        applySearchFilter();
+        clearForm();
+        alert("Semua data tersimpan berhasil dibersihkan dari tampilan!");
       }
     }
 
@@ -1039,7 +1068,7 @@
         { header: "ANYAM", key: "anyam", width: 15 },
         { header: "FINISHING", key: "finishing", width: 15 },
         { header: "ACCESSORIES", key: "accessories", width: 15 },
-        { header: "TOTAL COST", key: "total_cost", width: 18 },
+        { header: "TOTAL COST", key: "totalCost", width: 18 },
         { header: "50% PROFIT", key: "profit", width: 18 },
         { header: "OVERHEAD (10%)", key: "overhead", width: 18 },
         { header: "HARGA (RP.)", key: "price", width: 25 },
@@ -1065,7 +1094,7 @@
           anyam: item.anyam,
           finishing: item.finishing,
           accessories: item.accessories,
-          total_cost: item.total_cost || item.totalCost || "",
+          totalCost: item.totalCost,
           profit: item.profit,
           overhead: item.overhead,
           price: item.price,
@@ -1107,7 +1136,6 @@
       document.getElementById("input-import-excel").click();
     }
 
-    // IMPORT EXCEL & SIMPAN MASSAL KE SUPABASE
     async function handleImportExcel(input) {
       if (currentUserRole === 'user') return;
 
@@ -1119,7 +1147,8 @@
         await workbook.xlsx.load(file);
         const worksheet = workbook.getWorksheet(1);
 
-        let importList = [];
+        let countSuccess = 0;
+        let countSkipped = 0;
 
         worksheet.eachRow((row, rowNumber) => {
           if (rowNumber === 1) return;
@@ -1128,6 +1157,14 @@
           const name = row.getCell(3).value ? String(row.getCell(3).value).trim() : "";
 
           if (code && name) {
+            const isCodeExist = database.some(item => item.code.toLowerCase() === code.toLowerCase());
+            const isNameExist = database.some(item => item.name.toLowerCase() === name.toLowerCase());
+
+            if (isCodeExist || isNameExist) {
+              countSkipped++;
+              return;
+            }
+
             const itemData = {
               code: code,
               name: name,
@@ -1138,13 +1175,15 @@
               anyam: row.getCell(7).value ? String(row.getCell(7).value).trim() : "",
               finishing: row.getCell(8).value ? String(row.getCell(8).value).trim() : "",
               accessories: row.getCell(9).value ? String(row.getCell(9).value).trim() : "",
-              total_cost: row.getCell(10).value ? String(row.getCell(10).value).trim() : "", // Menggunakan total_cost
+              totalCost: row.getCell(10).value ? String(row.getCell(10).value).trim() : "",
               profit: row.getCell(11).value ? String(row.getCell(11).value).trim() : "",
               overhead: row.getCell(12).value ? String(row.getCell(12).value).trim() : "",
               price: row.getCell(13).value ? String(row.getCell(13).value).trim() : "Harga belum tersedia",
               description: row.getCell(14).value ? String(row.getCell(14).value).trim() : ""
             };
-            importList.push(itemData);
+
+            database.push(itemData);
+            countSuccess++;
           }
         });
 
@@ -1153,29 +1192,26 @@
           images.forEach(img => {
             const rowIdx = Math.floor(img.range.tl.row) - 1;
             const media = workbook.model.media.find(m => m.index === img.imageId);
-            if (media && importList[rowIdx]) {
+            if (media && database[rowIdx]) {
               const base64 = `data:image/${media.extension};base64,${media.buffer.toString('base64')}`;
-              importList[rowIdx].image = base64;
+              database[rowIdx].image = base64;
             }
           });
         }
 
-        if (importList.length > 0) {
-          const { error } = await supabaseClient.from('products').upsert(importList, { onConflict: 'code' });
-          if (error) throw error;
-          
-          await loadCloudData();
-          alert(`Berhasil mengimpor dan menyimpan ${importList.length} data ke Cloud!`);
-        }
+        applySearchFilter();
+        alert(`Import Selesai!\n- Berhasil diimpor: ${countSuccess} item\n- Dilewati (duplikat): ${countSkipped} item`);
       } catch (err) {
         console.error(err);
-        alert("Gagal membaca/mengimpor file Excel: " + err.message);
+        alert("Gagal membaca file Excel! Pastikan format kolom sesuai.");
       } finally {
         input.value = "";
       }
     }
 
     function clearForm() {
+      editIndex = null; // Reset status edit
+
       document.getElementById("input-code").value = "";
       document.getElementById("input-name").value = "";
       document.getElementById("input-dimension").value = "";
@@ -1193,9 +1229,14 @@
       document.getElementById("input-image").value = "";
       currentImageDataUrl = "";
       renderFrameImage("");
+
+      // Kembalikan tampilan tombol simpan ke mode awal
+      const btnSimpan = document.getElementById("btn-simpan");
+      btnSimpan.innerText = "💾 Simpan";
+      btnSimpan.classList.remove("bg-amber-600", "hover:bg-amber-700", "text-white");
+      btnSimpan.classList.add("bg-[#c2a378]", "hover:bg-[#b09066]", "text-slate-900");
     }
 
-    // Setup Awal
     calculatePricing();
   </script>
 
