@@ -266,26 +266,28 @@
 
     <div id="section-database" class="max-w-6xl mx-auto bg-white p-6 rounded-lg shadow-md no-print border border-gray-200">
       <div class="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 mb-4">
-        <h2 class="text-xl font-bold text-slate-800">Data Tersimpan (Supabase Cloud)</h2>
-        
-        <div class="flex flex-wrap items-center gap-2">
-          <div class="relative flex-1 sm:flex-none">
-            <input type="text" id="search-input" oninput="onSearchInput()" placeholder="🔍 Cari item code / nama..." class="w-full sm:w-64 px-3 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-amber-500">
-          </div>
-          <button onclick="loadDataFromCloud()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-3 py-2 rounded transition flex items-center gap-1">
-            🔄 Refresh Data
-          </button>
-          <button onclick="triggerImportExcel()" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-3 py-2 rounded transition flex items-center gap-1">
-            📥 Import Excel (Direct Cloud)
-          </button>
-          <button onclick="exportExcel()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-3 py-2 rounded transition flex items-center gap-1">
-            📊 Export Excel
-          </button>
-          <button id="btn-hapus-semua" onclick="hapusSemuaData()" class="bg-red-600 hover:bg-red-700 text-white text-xs font-semibold px-3 py-2 rounded transition flex items-center gap-1">
-            🗑️ Hapus Semua
-          </button>
-        </div>
-      </div>
+  <h2 class="text-xl font-bold text-slate-800">Data Tersimpan (Supabase Cloud)</h2>
+  
+  <div class="flex flex-wrap items-center gap-2">
+    <div class="relative flex-1 sm:flex-none">
+      <input type="text" id="search-input" oninput="onSearchInput()" placeholder="🔍 Cari item code / nama..." class="w-full sm:w-64 px-3 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-amber-500">
+    </div>
+    
+    <!-- Group Tombol Aksi Sejajar -->
+    <button onclick="loadDataFromCloud()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-3 py-2 rounded transition flex items-center gap-1">
+      🔄 Refresh Data
+    </button>
+    <button onclick="triggerImportExcel()" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-3 py-2 rounded transition flex items-center gap-1">
+      📥 Import Excel (Direct Cloud)
+    </button>
+    <button onclick="exportExcel()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-3 py-2 rounded transition flex items-center gap-1">
+      📊 Export Excel
+    </button>
+    <button id="btn-hapus-semua" onclick="hapusSemuaData()" class="bg-red-600 hover:bg-red-700 text-white text-xs font-semibold px-3 py-2 rounded transition flex items-center gap-1">
+      🗑️ Hapus Semua
+    </button>
+  </div>
+</div>
 
       <input type="file" id="input-import-excel" accept=".xlsx, .xls" class="hidden" onchange="handleImportExcel(this)">
       <input type="file" id="input-change-image" accept="image/*" class="hidden" onchange="handleReplaceImage(this)">
