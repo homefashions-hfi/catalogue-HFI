@@ -3,11 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Catalogue Database 2026</title>
+  <title>Catalogue Database 2026 - Supabase Edition</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+  <!-- Supabase JS Client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
     @font-face {
@@ -17,76 +19,21 @@
       font-style: normal;
     }
 
-    @font-face {
-      font-family: 'Wishful';
-      src: url('Wishful.ttf') format('truetype');
-      font-weight: normal;
-      font-style: normal;
-    }
-
-    .font-penguin {
-      font-family: 'Penguin', cursive, sans-serif;
-    }
-
-    .font-wishful {
-      font-family: 'Wishful', cursive, sans-serif;
-    }
+    .font-penguin { font-family: 'Penguin', cursive, sans-serif; }
 
     .bg-cream-abstract {
       background-color: #FDFBF7;
       background-image: 
-        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400' viewBox='0 0 400 400'%3E%3Cg fill='none' stroke='%238C6D46' stroke-width='1.5' stroke-opacity='0.08'%3E%3Cpath d='M100 350 C100 200, 150 120, 200 120 C250 120, 300 200, 300 350' /%3E%3Cpath d='M120 350 C120 220, 160 140, 200 140 C240 140, 280 220, 280 350' /%3E%3Cpath d='M140 350 C140 240, 170 160, 200 160 C230 160, 260 240, 260 350' /%3E%3Cpath d='M80 280 C120 270, 280 270, 320 280' /%3E%3Cpath d='M90 310 C130 300, 270 300, 310 310' /%3E%3Ccircle cx='200' cy='180' r='100' stroke-dasharray='4,4' /%3E%3C/g%3E%3C/svg%3E"),
         radial-gradient(circle at 10% 20%, rgba(210, 180, 140, 0.12) 0%, transparent 40%),
         radial-gradient(circle at 90% 80%, rgba(180, 140, 100, 0.1) 0%, transparent 45%);
-      background-repeat: repeat, no-repeat, no-repeat;
-      background-position: center, center, center;
     }
 
     @media print {
-      * {
-        -webkit-print-color-adjust: exact !important;
-        print-color-adjust: exact !important;
-      }
-
-      body * { 
-        visibility: hidden; 
-      }
-      #print-area, #print-area * { 
-        visibility: visible; 
-      }
-      #print-area { 
-        position: absolute; 
-        left: 0; 
-        top: 0; 
-        width: 100%; 
-        box-shadow: none !important;
-        border: none !important;
-      }
-      .no-print { 
-        display: none !important; 
-      }
-
-      input, textarea {
-        border: none !important;
-        background: transparent !important;
-        padding-left: 0 !important;
-        box-shadow: none !important;
-      }
-
-      #price-container {
-        border: none !important;
-        background: transparent !important;
-        padding: 0 !important;
-      }
-
-      #label-rp-jual {
-        position: static !important;
-        margin-right: 4px !important;
-      }
-
-      #input-price {
-        padding-left: 0 !important;
-      }
+      * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+      body * { visibility: hidden; }
+      #print-area, #print-area * { visibility: visible; }
+      #print-area { position: absolute; left: 0; top: 0; width: 100%; box-shadow: none !important; border: none !important; }
+      .no-print { display: none !important; }
     }
   </style>
 </head>
@@ -132,9 +79,7 @@
     <div class="max-w-6xl mx-auto mb-4 flex justify-between items-center bg-white p-3 px-4 rounded-lg shadow-sm border border-gray-200 no-print">
       <div class="flex items-center gap-2 text-sm">
         <span class="text-slate-500">Login sebagai:</span>
-        <span id="user-role-badge" class="font-bold px-2 py-0.5 rounded text-xs uppercase bg-amber-100 text-amber-900 border border-amber-300">
-          -
-        </span>
+        <span id="user-role-badge" class="font-bold px-2 py-0.5 rounded text-xs uppercase bg-amber-100 text-amber-900 border border-amber-300">-</span>
       </div>
       <button onclick="handleLogout()" class="text-xs bg-red-100 hover:bg-red-200 text-red-700 font-semibold px-3 py-1.5 rounded transition flex items-center gap-1">
         🚪 Logout
@@ -201,7 +146,6 @@
         </div>
 
         <div class="md:col-span-5 flex flex-col justify-between space-y-4">
-          
           <div class="bg-white/80 backdrop-blur-sm p-5 rounded-lg border border-amber-900/15 shadow-sm space-y-3">
             
             <div class="flex items-center text-sm">
@@ -322,7 +266,7 @@
 
     <div id="section-database" class="max-w-6xl mx-auto bg-white p-6 rounded-lg shadow-md no-print border border-gray-200">
       <div class="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 mb-4">
-        <h2 class="text-xl font-bold text-slate-800">Data Tersimpan (Cloud Drive)</h2>
+        <h2 class="text-xl font-bold text-slate-800">Data Tersimpan (Supabase Cloud)</h2>
         
         <div class="flex flex-wrap items-center gap-2">
           <div class="relative flex-1 sm:flex-none">
@@ -332,7 +276,7 @@
             🔄 Refresh Data
           </button>
           <button onclick="triggerImportExcel()" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-3 py-2 rounded transition flex items-center gap-1">
-            📥 Import Excel
+            📥 Import Excel (Direct Cloud)
           </button>
           <button onclick="exportExcel()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-3 py-2 rounded transition flex items-center gap-1">
             📊 Export Excel
@@ -374,9 +318,7 @@
       </div>
 
       <div id="pagination-container" class="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
-        <span id="page-info" class="text-xs text-gray-600 font-medium">
-          Menampilkan 0 dari 0 data
-        </span>
+        <span id="page-info" class="text-xs text-gray-600 font-medium">Menampilkan 0 dari 0 data</span>
         <div class="flex gap-2">
           <button id="btn-prev" onclick="prevPage()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-xs font-semibold px-3 py-1.5 rounded transition">
             ◀ Sebelumnya
@@ -396,7 +338,10 @@
   </div>
 
   <script>
-    const API_URL = "https://pmnpctcomypxrezycdcm.supabase.co";
+    // --- KONFIGURASI SUPABASE ---
+    const SUPABASE_URL = "https://cswaclrfsphdvzdazhwl.supabase.co"; 
+    const SUPABASE_ANON_KEY = "sb_publishable_UC3iekZEdmvl2rA9FbBdYA_LXn7121v";
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     const USERS = {
       'admin': { pass: 'admin123', role: 'admin' },
@@ -406,26 +351,58 @@
 
     let currentUserRole = null;
     let database = [];
+    let currentSelectedFile = null;
     let currentImageDataUrl = "";
     let targetChangeImageIndex = null;
-    let editIndex = null; // Penanda index data yang sedang diedit
+    let editIndex = null;
 
     let currentPage = 1;
     const itemsPerPage = 10;
     let filteredDatabase = [];
 
-    async function loadDataFromCloud() {
-      if (!API_URL || API_URL === "https://script.google.com/macros/s/AKfycbyf4avgOI381eLAodTbQ42Im6HRNFA5-OFiJMDbTipcxkEPS7UapxKjLAGXsFZ57X_L/exec") return;
-
+    // --- UTILS SUPABASE STORAGE ---
+    async function uploadImageToStorage(fileOrBase64, filename) {
       try {
-        const res = await fetch(API_URL);
-        const resData = await res.json();
-        if (resData.status === "success") {
-          database = resData.data;
-          applySearchFilter();
+        let fileBody = fileOrBase64;
+        if (typeof fileOrBase64 === "string" && fileOrBase64.startsWith("data:image")) {
+          const res = await fetch(fileOrBase64);
+          fileBody = await res.blob();
         }
+
+        const cleanFilename = `${Date.now()}_${filename.replace(/[^a-zA-Z0-9.]/g, '_')}`;
+        const { data, error } = await supabaseClient.storage
+          .from('product-images')
+          .upload(cleanFilename, fileBody, { upsert: true });
+
+        if (error) throw error;
+
+        const { data: publicUrlData } = supabaseClient.storage
+          .from('product-images')
+          .getPublicUrl(cleanFilename);
+
+        return publicUrlData.publicUrl;
+      } catch (err) {
+        console.error("Gagal Upload Gambar ke Supabase:", err);
+        return "";
+      }
+    }
+
+    async function loadDataFromCloud() {
+      try {
+        const { data, error } = await supabaseClient
+          .from('products')
+          .select('*')
+          .order('id', { ascending: false });
+
+        if (error) throw error;
+
+        database = data.map(item => ({
+          ...item,
+          totalCost: item.total_cost
+        }));
+        applySearchFilter();
       } catch (e) {
-        console.error("Gagal memuat data dari cloud:", e);
+        console.error("Gagal memuat data dari Supabase:", e);
       }
     }
 
@@ -485,7 +462,6 @@
 
         const appContent = document.getElementById("app-content");
         appContent.classList.remove("filter", "blur-md", "pointer-events-none");
-        
         applyRolePermissions();
       } else {
         errEl.classList.remove("hidden");
@@ -521,14 +497,12 @@
       const btnSelectImage = document.getElementById("btn-select-image");
       const hoverImageOverlay = document.getElementById("hover-image-overlay");
 
-      const inputsReadOnlyUser = [
-        "input-name", "input-dimension", "input-weight", "input-description"
-      ];
+      const inputsReadOnlyUser = ["input-name", "input-dimension", "input-weight", "input-description"];
 
-      if (currentUserRole === "admin") {
+      if (currentUserRole === "admin" || currentUserRole === "operator") {
         btnSimpan.style.display = "flex";
         btnResetForm.style.display = "flex";
-        btnHapusSemua.style.display = "flex";
+        btnHapusSemua.style.display = currentUserRole === "admin" ? "flex" : "none";
         btnCetak.style.display = "flex";
         rincianBiayaContainer.style.display = "block";
         sectionDatabase.style.display = "block";
@@ -542,25 +516,6 @@
           el.classList.remove("bg-gray-100", "cursor-not-allowed");
           el.classList.add("bg-white");
         });
-
-      } else if (currentUserRole === "operator") {
-        btnSimpan.style.display = "flex";
-        btnResetForm.style.display = "flex";
-        btnHapusSemua.style.display = "none";
-        btnCetak.style.display = "flex";
-        rincianBiayaContainer.style.display = "block";
-        sectionDatabase.style.display = "block";
-        btnSelectImage.style.display = "inline-block";
-        hoverImageOverlay.style.display = "flex";
-
-        document.getElementById("input-code").removeAttribute("readonly");
-        inputsReadOnlyUser.forEach(id => {
-          const el = document.getElementById(id);
-          el.removeAttribute("readonly");
-          el.classList.remove("bg-gray-100", "cursor-not-allowed");
-          el.classList.add("bg-white");
-        });
-
       } else if (currentUserRole === "user") {
         btnSimpan.style.display = "none";
         btnResetForm.style.display = "none";
@@ -627,9 +582,9 @@
 
     function previewImage(input) {
       if (currentUserRole === 'user') return;
-
       const file = input.files[0];
       if (file) {
+        currentSelectedFile = file;
         const reader = new FileReader();
         reader.onload = function(e) {
           currentImageDataUrl = e.target.result;
@@ -654,7 +609,6 @@
       }
     }
 
-    // SIMPAN / UPDATE DATA KE CLOUD DENGAN PENANGANAN EDIT
     async function simpanData() {
       if (currentUserRole === 'user') return;
 
@@ -666,78 +620,149 @@
         return;
       }
 
-      // Cek duplikasi (Abaikan item yang sedang diedit sendiri)
-      const isCodeExist = database.some((item, idx) => item.code.toLowerCase() === code.toLowerCase() && idx !== editIndex);
-      const isNameExist = database.some((item, idx) => item.name.toLowerCase() === name.toLowerCase() && idx !== editIndex);
-
-      if (isCodeExist) {
-        alert(`❌ Gagal!\nItem Code "${code}" sudah digunakan oleh item lain.`);
-        return;
-      }
-
-      if (isNameExist) {
-        alert(`❌ Gagal!\nItem Name "${name}" sudah digunakan oleh item lain.`);
-        return;
-      }
-
-      const itemData = {
-        code: code,
-        name: name,
-        image: currentImageDataUrl,
-        dimension: document.getElementById("input-dimension").value.trim(),
-        weight: document.getElementById("input-weight").value.trim(),
-        description: document.getElementById("input-description").value.trim(),
-        
-        rangka: document.getElementById("input-rangka").value,
-        anyam: document.getElementById("input-anyam").value,
-        finishing: document.getElementById("input-finishing").value,
-        accessories: document.getElementById("input-accessories").value,
-        totalCost: document.getElementById("input-total-cost").value,
-        profit: document.getElementById("input-profit").value,
-        overhead: document.getElementById("input-overhead").value,
-        price: document.getElementById("input-price").value,
-
-        isUpdate: editIndex !== null,
-        oldCode: editIndex !== null ? database[editIndex].code : ""
-      };
-
       const btnSimpan = document.getElementById("btn-simpan");
       btnSimpan.disabled = true;
-      btnSimpan.innerText = editIndex !== null ? "⏳ Memperbarui..." : "⏳ Menyimpan...";
-
-      if (!API_URL || API_URL === "PASTE_WEB_APP_URL_DISINI") {
-        if (editIndex !== null) {
-          database[editIndex] = itemData;
-          alert("Data berhasil diperbarui (Lokal)!");
-        } else {
-          database.push(itemData);
-          alert("Data baru berhasil disimpan (Lokal)!");
-        }
-        applySearchFilter();
-        clearForm();
-        btnSimpan.disabled = false;
-        return;
-      }
+      btnSimpan.innerText = "⏳ Menyimpan ke Supabase...";
 
       try {
-        const res = await fetch(API_URL, {
-          method: 'POST',
-          body: JSON.stringify(itemData)
-        });
-        const resData = await res.json();
+        let imageUrl = currentImageDataUrl;
 
-        if (resData.status === "success") {
-          alert(editIndex !== null ? "Data berhasil diperbarui di Cloud!" : "Data berhasil disimpan ke Cloud!");
-          await loadDataFromCloud();
-          clearForm();
-        } else {
-          alert("Gagal memproses data: " + resData.message);
+        // Upload gambar ke Supabase Storage jika ada file baru
+        if (currentSelectedFile) {
+          imageUrl = await uploadImageToStorage(currentSelectedFile, `${code}.jpg`);
         }
+
+        const itemPayload = {
+          code: code,
+          name: name,
+          image: imageUrl,
+          dimension: document.getElementById("input-dimension").value.trim(),
+          weight: document.getElementById("input-weight").value.trim(),
+          description: document.getElementById("input-description").value.trim(),
+          rangka: document.getElementById("input-rangka").value,
+          anyam: document.getElementById("input-anyam").value,
+          finishing: document.getElementById("input-finishing").value,
+          accessories: document.getElementById("input-accessories").value,
+          total_cost: document.getElementById("input-total-cost").value,
+          profit: document.getElementById("input-profit").value,
+          overhead: document.getElementById("input-overhead").value,
+          price: document.getElementById("input-price").value
+        };
+
+        if (editIndex !== null) {
+          const targetId = database[editIndex].id;
+          const { error } = await supabaseClient.from('products').update(itemPayload).eq('id', targetId);
+          if (error) throw error;
+          alert("Data berhasil diperbarui di Supabase!");
+        } else {
+          const { error } = await supabaseClient.from('products').insert([itemPayload]);
+          if (error) throw error;
+          alert("Data berhasil disimpan ke Supabase!");
+        }
+
+        await loadDataFromCloud();
+        clearForm();
       } catch (err) {
-        console.error(err);
-        alert("Terjadi kesalahan jaringan saat memproses data.");
+        alert("Gagal menyimpan ke Supabase: " + err.message);
       } finally {
         btnSimpan.disabled = false;
+      }
+    }
+
+    // --- IMPORT EXCEL LANGSUNG KE SUPABASE ---
+    async function handleImportExcel(input) {
+      if (currentUserRole === 'user') return;
+
+      const file = input.files[0];
+      if (!file) return;
+
+      try {
+        const workbook = new ExcelJS.Workbook();
+        await workbook.xlsx.load(file);
+        const worksheet = workbook.getWorksheet(1);
+
+        const newItems = [];
+        const imageMap = {};
+
+        // Ekstrak Gambar dari Worksheet jika ada
+        if (worksheet.getImages) {
+          const images = worksheet.getImages();
+          for (const img of images) {
+            const rowIdx = Math.floor(img.range.tl.row);
+            const media = workbook.model.media.find(m => m.index === img.imageId);
+            if (media) {
+              imageMap[rowIdx] = `data:image/${media.extension};base64,${media.buffer.toString('base64')}`;
+            }
+          }
+        }
+
+        worksheet.eachRow((row, rowNumber) => {
+          if (rowNumber === 1) return;
+
+          const code = row.getCell(2).value ? String(row.getCell(2).value).trim() : "";
+          const name = row.getCell(3).value ? String(row.getCell(3).value).trim() : "";
+
+          if (code && name) {
+            newItems.push({
+              rowIdx: rowNumber - 1,
+              code: code,
+              name: name,
+              dimension: row.getCell(4).value ? String(row.getCell(4).value).trim() : "",
+              weight: row.getCell(5).value ? String(row.getCell(5).value).trim() : "",
+              rangka: row.getCell(6).value ? String(row.getCell(6).value).trim() : "",
+              anyam: row.getCell(7).value ? String(row.getCell(7).value).trim() : "",
+              finishing: row.getCell(8).value ? String(row.getCell(8).value).trim() : "",
+              accessories: row.getCell(9).value ? String(row.getCell(9).value).trim() : "",
+              total_cost: row.getCell(10).value ? String(row.getCell(10).value).trim() : "",
+              profit: row.getCell(11).value ? String(row.getCell(11).value).trim() : "",
+              overhead: row.getCell(12).value ? String(row.getCell(12).value).trim() : "",
+              price: row.getCell(13).value ? String(row.getCell(13).value).trim() : "Harga belum tersedia",
+              description: row.getCell(14).value ? String(row.getCell(14).value).trim() : ""
+            });
+          }
+        });
+
+        alert(`Memulai impor ${newItems.length} data + gambar langsung ke Supabase Storage & Database... Mohon tunggu.`);
+
+        let successCount = 0;
+
+        for (const item of newItems) {
+          let publicImageUrl = "";
+
+          // Upload Gambar Jika Ada ke Storage
+          if (imageMap[item.rowIdx]) {
+            publicImageUrl = await uploadImageToStorage(imageMap[item.rowIdx], `${item.code}.png`);
+          }
+
+          const payload = {
+            code: item.code,
+            name: item.name,
+            image: publicImageUrl,
+            dimension: item.dimension,
+            weight: item.weight,
+            rangka: item.rangka,
+            anyam: item.anyam,
+            finishing: item.finishing,
+            accessories: item.accessories,
+            total_cost: item.total_cost,
+            profit: item.profit,
+            overhead: item.overhead,
+            price: item.price,
+            description: item.description
+          };
+
+          // Upsert Data ke Supabase
+          const { error } = await supabaseClient.from('products').upsert(payload, { onConflict: 'code' });
+          if (!error) successCount++;
+        }
+
+        alert(`Import selesai! ${successCount} dari ${newItems.length} item berhasil masuk ke Supabase.`);
+        await loadDataFromCloud();
+
+      } catch (err) {
+        alert("Gagal melakukan import Excel: " + err.message);
+      } finally {
+        input.value = "";
       }
     }
 
@@ -807,15 +832,11 @@
                   ? `<img src="${item.image}" onmouseenter="showHoverPreview(event, ${originalIndex})" onmousemove="moveHoverPreview(event)" onmouseleave="hideHoverPreview()" class="max-w-full max-h-full object-contain cursor-pointer">` 
                   : `<span class="text-[10px] text-gray-400">No Img</span>`}
               </div>
-              <button onclick="triggerChangeImage(${originalIndex})" class="text-[9px] text-blue-600 hover:text-blue-800 font-semibold underline no-print">
-                📷 Ganti
-              </button>
+              <button onclick="triggerChangeImage(${originalIndex})" class="text-[9px] text-blue-600 hover:text-blue-800 font-semibold underline no-print">📷 Ganti</button>
             </div>
           </td>
           <td class="border border-gray-200 p-1.5 font-semibold text-slate-700 whitespace-nowrap text-center align-middle">${item.code}</td>
-          <td class="border border-gray-200 p-1.5 align-middle">
-            <svg id="table-barcode-${i}" class="max-h-10 mx-auto"></svg>
-          </td>
+          <td class="border border-gray-200 p-1.5 align-middle"><svg id="table-barcode-${i}" class="max-h-10 mx-auto"></svg></td>
           <td class="border border-gray-200 p-1.5 text-slate-800 text-center align-middle">${item.name}</td>
           <td class="border border-gray-200 p-1.5 whitespace-nowrap text-center align-middle">${item.dimension || '-'}</td>
           <td class="border border-gray-200 p-1.5 whitespace-nowrap text-center align-middle">${item.weight || '-'}</td>
@@ -830,13 +851,9 @@
           <td class="border border-gray-200 p-1.5 text-[11px] text-gray-600 leading-relaxed text-center align-middle">${item.description || '-'}</td>
           <td class="border border-gray-200 p-1.5 whitespace-nowrap text-center align-middle no-print">
             <div class="flex gap-1 justify-center">
-              <button onclick="editData(${originalIndex})" class="bg-amber-500 hover:bg-amber-600 text-white text-[10px] px-2 py-1 rounded transition">
-                ✏️ Edit
-              </button>
+              <button onclick="editData(${originalIndex})" class="bg-amber-500 hover:bg-amber-600 text-white text-[10px] px-2 py-1 rounded transition">✏️ Edit</button>
               ${btnHapusHtml}
-              <button onclick="cetakSatuData(${originalIndex})" class="bg-slate-600 hover:bg-slate-700 text-white text-[10px] px-2 py-1 rounded transition">
-                🖨️ Cetak
-              </button>
+              <button onclick="cetakSatuData(${originalIndex})" class="bg-slate-600 hover:bg-slate-700 text-white text-[10px] px-2 py-1 rounded transition">🖨️ Cetak</button>
             </div>
           </td>
         `;
@@ -873,20 +890,8 @@
       btnNext.disabled = currentPage >= totalPages;
     }
 
-    function prevPage() {
-      if (currentPage > 1) {
-        currentPage--;
-        renderTable();
-      }
-    }
-
-    function nextPage() {
-      const totalPages = Math.ceil(filteredDatabase.length / itemsPerPage);
-      if (currentPage < totalPages) {
-        currentPage++;
-        renderTable();
-      }
-    }
+    function prevPage() { if (currentPage > 1) { currentPage--; renderTable(); } }
+    function nextPage() { if (currentPage < Math.ceil(filteredDatabase.length / itemsPerPage)) { currentPage++; renderTable(); } }
 
     function triggerChangeImage(index) {
       if (currentUserRole === 'user') return;
@@ -894,38 +899,27 @@
       document.getElementById("input-change-image").click();
     }
 
-    function handleReplaceImage(input) {
+    async function handleReplaceImage(input) {
       if (currentUserRole === 'user') return;
-
       const file = input.files[0];
       if (file && targetChangeImageIndex !== null) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-          database[targetChangeImageIndex].image = e.target.result;
-          
-          const currentCodeInForm = document.getElementById("input-code").value.trim();
-          if (currentCodeInForm.toLowerCase() === database[targetChangeImageIndex].code.toLowerCase()) {
-            currentImageDataUrl = e.target.result;
-            renderFrameImage(currentImageDataUrl);
-          }
-
-          applySearchFilter();
-          alert(`Gambar untuk item "${database[targetChangeImageIndex].code}" berhasil diganti! Klik Update Data untuk memperbarui di Cloud.`);
-          input.value = "";
-          targetChangeImageIndex = null;
-        };
-        reader.readAsDataURL(file);
+        const item = database[targetChangeImageIndex];
+        const newUrl = await uploadImageToStorage(file, `${item.code}.jpg`);
+        if (newUrl) {
+          await supabaseClient.from('products').update({ image: newUrl }).eq('id', item.id);
+          alert("Gambar berhasil diganti di Supabase!");
+          await loadDataFromCloud();
+        }
+        input.value = "";
+        targetChangeImageIndex = null;
       }
     }
 
     function showHoverPreview(event, index) {
       const item = database[index];
       if (!item || !item.image) return;
-
       const previewBox = document.getElementById("hover-preview");
-      const previewImg = document.getElementById("hover-preview-img");
-
-      previewImg.src = item.image;
+      document.getElementById("hover-preview-img").src = item.image;
       previewBox.classList.remove("hidden");
       moveHoverPreview(event);
     }
@@ -933,65 +927,34 @@
     function moveHoverPreview(event) {
       const previewBox = document.getElementById("hover-preview");
       if (previewBox.classList.contains("hidden")) return;
-
-      const mouseX = event.clientX;
-      const mouseY = event.clientY;
-
-      let topPos = mouseY + 15;
-      let leftPos = mouseX + 15;
-
-      if (leftPos + 280 > window.innerWidth) {
-        leftPos = mouseX - 280;
-      }
-      if (topPos + 280 > window.innerHeight) {
-        topPos = mouseY - 280;
-      }
-
-      previewBox.style.top = topPos + "px";
-      previewBox.style.left = leftPos + "px";
+      previewBox.style.top = (event.clientY + 15) + "px";
+      previewBox.style.left = (event.clientX + 15) + "px";
     }
 
     function hideHoverPreview() {
-      const previewBox = document.getElementById("hover-preview");
-      previewBox.classList.add("hidden");
-      document.getElementById("hover-preview-img").src = "";
+      document.getElementById("hover-preview").classList.add("hidden");
     }
 
-    function handleCodeKeydown(event) {
-      if (event.key === 'Enter') {
-        event.preventDefault();
-        cekHarga();
-      }
-    }
+    function handleCodeKeydown(event) { if (event.key === 'Enter') { event.preventDefault(); cekHarga(); } }
 
     function cekHarga() {
       const searchCode = document.getElementById("input-code").value.trim();
-      if (!searchCode) {
-        alert("Masukkan kode item terlebih dahulu!");
-        return;
-      }
-
+      if (!searchCode) return alert("Masukkan kode item!");
       const foundIndex = database.findIndex(item => item.code.toLowerCase() === searchCode.toLowerCase());
-
-      if (foundIndex !== -1) {
-        editData(foundIndex);
-      } else {
-        alert(`Data dengan kode ${searchCode} tidak ditemukan.`);
-      }
+      if (foundIndex !== -1) editData(foundIndex);
+      else alert(`Data dengan kode ${searchCode} tidak ditemukan.`);
     }
 
     function editData(index) {
       const item = database[index];
       if (!item) return;
 
-      editIndex = index; // Tandai bahwa sistem sedang dalam mode Edit
-
+      editIndex = index;
       document.getElementById("input-code").value = item.code;
       document.getElementById("input-name").value = item.name;
       document.getElementById("input-dimension").value = item.dimension || "";
       document.getElementById("input-weight").value = item.weight || "";
       document.getElementById("input-description").value = item.description || "";
-
       document.getElementById("input-rangka").value = item.rangka || "";
       document.getElementById("input-anyam").value = item.anyam || "";
       document.getElementById("input-finishing").value = item.finishing || "";
@@ -1003,63 +966,40 @@
       currentImageDataUrl = item.image || "";
       renderFrameImage(currentImageDataUrl);
 
-      // Ubah tombol Simpan menjadi Update Data
       const btnSimpan = document.getElementById("btn-simpan");
       btnSimpan.innerText = "✏️ Update Data";
-      btnSimpan.classList.remove("bg-[#c2a378]", "hover:bg-[#b09066]");
-      btnSimpan.classList.add("bg-amber-600", "hover:bg-amber-700", "text-white");
-
-      if(currentUserRole !== 'user') document.getElementById("input-name").focus();
+      btnSimpan.classList.replace("bg-[#c2a378]", "bg-amber-600");
     }
 
-    function hapusData(index) {
+    async function hapusData(index) {
       if (currentUserRole !== 'admin') return;
-
       const item = database[index];
-      if (confirm(`Apakah Anda yakin ingin menghapus data "${item.name}" (${item.code})?`)) {
-        database.splice(index, 1);
-        applySearchFilter();
+      if (confirm(`Hapus data "${item.name}" (${item.code}) dari Supabase?`)) {
+        await supabaseClient.from('products').delete().eq('id', item.id);
+        await loadDataFromCloud();
         clearForm();
       }
     }
 
-    function hapusSemuaData() {
+    async function hapusSemuaData() {
       if (currentUserRole !== 'admin') return;
-
-      if (database.length === 0) {
-        alert("Belum ada data tersimpan yang dapat dihapus.");
-        return;
-      }
-
-      if (confirm("Apakah Anda yakin ingin MENGHAPUS SEMUA DATA tersimpan? Tindakan ini tidak dapat dibatalkan!")) {
-        database = [];
-        applySearchFilter();
+      if (confirm("MENGHAPUS SEMUA DATA di Supabase?")) {
+        await supabaseClient.from('products').delete().neq('id', 0);
+        await loadDataFromCloud();
         clearForm();
-        alert("Semua data tersimpan berhasil dibersihkan dari tampilan!");
       }
     }
 
-    function cetakData() {
-      window.print();
-    }
-
-    function cetakSatuData(index) {
-      editData(index);
-      window.print();
-    }
+    function cetakData() { window.print(); }
+    function cetakSatuData(index) { editData(index); window.print(); }
 
     async function exportExcel() {
-      if (currentUserRole === 'user') return;
-      if (database.length === 0) {
-        alert("Tidak ada data untuk diekspor!");
-        return;
-      }
-
+      if (currentUserRole === 'user' || database.length === 0) return;
       const workbook = new ExcelJS.Workbook();
       const worksheet = workbook.addWorksheet("Data Produk");
 
       worksheet.columns = [
-        { header: "GAMBAR", key: "image", width: 16 },
+        { header: "GAMBAR URL", key: "image", width: 30 },
         { header: "ITEM CODE", key: "code", width: 16 },
         { header: "ITEM NAME", key: "name", width: 25 },
         { header: "DIMENSION (CM)", key: "dimension", width: 18 },
@@ -1075,60 +1015,9 @@
         { header: "DESKRIPSI PRODUK", key: "description", width: 45 }
       ];
 
-      worksheet.getRow(1).font = { bold: true, color: { argb: "FFFFFF" } };
-      worksheet.getRow(1).fill = {
-        type: "pattern",
-        pattern: "solid",
-        fgColor: { argb: "334155" }
-      };
-
-      database.forEach((item, index) => {
-        const rowNum = index + 2;
-        const row = worksheet.addRow({
-          image: "",
-          code: item.code,
-          name: item.name,
-          dimension: item.dimension,
-          weight: item.weight,
-          rangka: item.rangka,
-          anyam: item.anyam,
-          finishing: item.finishing,
-          accessories: item.accessories,
-          totalCost: item.totalCost,
-          profit: item.profit,
-          overhead: item.overhead,
-          price: item.price,
-          description: item.description
-        });
-
-        row.height = 60;
-        row.alignment = { vertical: 'middle' };
-
-        if (item.image && item.image.startsWith("data:image")) {
-          try {
-            const base64Data = item.image.split(",")[1];
-            let ext = "png";
-            if (item.image.includes("jpeg") || item.image.includes("jpg")) ext = "jpeg";
-
-            const imageId = workbook.addImage({
-              base64: base64Data,
-              extension: ext,
-            });
-
-            worksheet.addImage(imageId, {
-              tl: { col: 0, row: rowNum - 1 },
-              ext: { width: 70, height: 70 },
-              editAs: "oneCell"
-            });
-          } catch (e) {
-            console.error("Gagal menambahkan gambar ke Excel:", e);
-          }
-        }
-      });
-
+      database.forEach(item => worksheet.addRow(item));
       const buffer = await workbook.xlsx.writeBuffer();
-      const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
-      saveAs(blob, "Data_Produk_Lengkap.xlsx");
+      saveAs(new Blob([buffer]), "Data_Produk_Supabase.xlsx");
     }
 
     function triggerImportExcel() {
@@ -1136,88 +1025,14 @@
       document.getElementById("input-import-excel").click();
     }
 
-    async function handleImportExcel(input) {
-      if (currentUserRole === 'user') return;
-
-      const file = input.files[0];
-      if (!file) return;
-
-      try {
-        const workbook = new ExcelJS.Workbook();
-        await workbook.xlsx.load(file);
-        const worksheet = workbook.getWorksheet(1);
-
-        let countSuccess = 0;
-        let countSkipped = 0;
-
-        worksheet.eachRow((row, rowNumber) => {
-          if (rowNumber === 1) return;
-
-          const code = row.getCell(2).value ? String(row.getCell(2).value).trim() : "";
-          const name = row.getCell(3).value ? String(row.getCell(3).value).trim() : "";
-
-          if (code && name) {
-            const isCodeExist = database.some(item => item.code.toLowerCase() === code.toLowerCase());
-            const isNameExist = database.some(item => item.name.toLowerCase() === name.toLowerCase());
-
-            if (isCodeExist || isNameExist) {
-              countSkipped++;
-              return;
-            }
-
-            const itemData = {
-              code: code,
-              name: name,
-              image: "",
-              dimension: row.getCell(4).value ? String(row.getCell(4).value).trim() : "",
-              weight: row.getCell(5).value ? String(row.getCell(5).value).trim() : "",
-              rangka: row.getCell(6).value ? String(row.getCell(6).value).trim() : "",
-              anyam: row.getCell(7).value ? String(row.getCell(7).value).trim() : "",
-              finishing: row.getCell(8).value ? String(row.getCell(8).value).trim() : "",
-              accessories: row.getCell(9).value ? String(row.getCell(9).value).trim() : "",
-              totalCost: row.getCell(10).value ? String(row.getCell(10).value).trim() : "",
-              profit: row.getCell(11).value ? String(row.getCell(11).value).trim() : "",
-              overhead: row.getCell(12).value ? String(row.getCell(12).value).trim() : "",
-              price: row.getCell(13).value ? String(row.getCell(13).value).trim() : "Harga belum tersedia",
-              description: row.getCell(14).value ? String(row.getCell(14).value).trim() : ""
-            };
-
-            database.push(itemData);
-            countSuccess++;
-          }
-        });
-
-        if (worksheet.getImages) {
-          const images = worksheet.getImages();
-          images.forEach(img => {
-            const rowIdx = Math.floor(img.range.tl.row) - 1;
-            const media = workbook.model.media.find(m => m.index === img.imageId);
-            if (media && database[rowIdx]) {
-              const base64 = `data:image/${media.extension};base64,${media.buffer.toString('base64')}`;
-              database[rowIdx].image = base64;
-            }
-          });
-        }
-
-        applySearchFilter();
-        alert(`Import Selesai!\n- Berhasil diimpor: ${countSuccess} item\n- Dilewati (duplikat): ${countSkipped} item`);
-      } catch (err) {
-        console.error(err);
-        alert("Gagal membaca file Excel! Pastikan format kolom sesuai.");
-      } finally {
-        input.value = "";
-      }
-    }
-
     function clearForm() {
-      editIndex = null; // Reset status edit
-
+      editIndex = null;
+      currentSelectedFile = null;
       document.getElementById("input-code").value = "";
       document.getElementById("input-name").value = "";
       document.getElementById("input-dimension").value = "";
       document.getElementById("input-weight").value = "";
       document.getElementById("input-description").value = "";
-      
       document.getElementById("input-rangka").value = "";
       document.getElementById("input-anyam").value = "";
       document.getElementById("input-finishing").value = "";
@@ -1225,20 +1040,14 @@
       
       calculatePricing();
       generateMainBarcode();
-
-      document.getElementById("input-image").value = "";
-      currentImageDataUrl = "";
       renderFrameImage("");
 
-      // Kembalikan tampilan tombol simpan ke mode awal
       const btnSimpan = document.getElementById("btn-simpan");
       btnSimpan.innerText = "💾 Simpan";
-      btnSimpan.classList.remove("bg-amber-600", "hover:bg-amber-700", "text-white");
-      btnSimpan.classList.add("bg-[#c2a378]", "hover:bg-[#b09066]", "text-slate-900");
+      btnSimpan.classList.replace("bg-amber-600", "bg-[#c2a378]");
     }
 
     calculatePricing();
   </script>
-
 </body>
 </html>
